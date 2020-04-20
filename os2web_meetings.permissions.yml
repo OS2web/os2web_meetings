@@ -1,0 +1,3 @@
+administer os2web_meetings configuration:
+  title: 'Administer OS2Web Meetings configuration'
+  restrict access: true

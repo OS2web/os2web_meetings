@@ -1,0 +1,12 @@
+name: OS2Web Meetings
+type: module
+description: Import meetings from ESDH systems
+package: OS2Web
+core: 8.x
+core_version_requirement: ^8 || ^9
+dependencies:
+  - drupal:migrate
+  - drupal:text
+  - migrate_plus
+  - migrate_tools
+#configure: os2web_borgerdk.settings_form

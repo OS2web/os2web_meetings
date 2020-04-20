@@ -1,0 +1,7 @@
+os2web_meetings.settings_form:
+  path: '/admin/config/content/os2web-meetings'
+  defaults:
+    _title: 'OS2Web Meetings settings'
+    _form: 'Drupal\os2web_meetings\Form\SettingsForm'
+  requirements:
+    _permission: 'administer os2web_meetings configuration'

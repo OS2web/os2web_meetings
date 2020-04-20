@@ -1,0 +1,45 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for os2web_meetings module.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\os2web_meetings\Entity\BulletPoint;
+use Drupal\os2web_meetings\Entity\Meeting;
+
+/**
+ * Implements hook_ENTITY_TYPE_delete().
+ */
+function os2web_meetings_node_delete(EntityInterface $entity) {
+  if ($entity->bundle() == 'os2web_meetings_meeting') {
+    // Getting related BPs.
+    $meeting = new Meeting($entity);
+    $bps = $meeting->getBulletPoints();
+
+    // Deleting related BPs.
+    if (!empty($bps)) {
+      foreach ($bps as $bp) {
+        $bp->delete();
+      }
+    }
+  }
+  elseif ($entity->bundle() == 'os2web_meetings_bp') {
+    // Deleting related memos.
+    $bulletPoint = new BulletPoint($entity);
+
+    // Getting related BPAa.
+    $bpas = $bulletPoint->getBulletPointAttachments();
+
+    // Deleting related BPAa.
+    if (!empty($bpas)) {
+      foreach ($bpas as $bpa) {
+        $bpa->delete();
+      }
+    }
+  }
+  elseif ($entity->bundle() == 'os2web_meetings_bp') {
+
+  }
+}
