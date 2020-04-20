@@ -36,8 +36,8 @@ install:
   #  - export REPOSITORIES_REPLACE='"repositories": \[\{"type": "path","url": "..\/os2web", "options": \{"symlink": false\}\},\},'
   #  - export REQUIRE='"require": {'
   #  - export REQUIRE_REPLACE='"require": {"os2web\/os2web": "\*",'
-  - sed -i "s/$REPOSITORIES/$REPOSITORIES_REPLACE/g" composer.json
-  - sed -i "s/$REQUIRE/$REQUIRE_REPLACE/g" composer.json
+  #  - sed -i "s/$REPOSITORIES/$REPOSITORIES_REPLACE/g" composer.json
+  #  - sed -i "s/$REQUIRE/$REQUIRE_REPLACE/g" composer.json
   - composer update
   - cd $DRUPAL_ROOT/core
   - yarn install
