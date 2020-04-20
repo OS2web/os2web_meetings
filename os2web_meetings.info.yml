@@ -9,4 +9,4 @@ dependencies:
   - drupal:text
   - migrate_plus
   - migrate_tools
-#configure: os2web_borgerdk.settings_form
+configure: os2web_meetings.settings_form
