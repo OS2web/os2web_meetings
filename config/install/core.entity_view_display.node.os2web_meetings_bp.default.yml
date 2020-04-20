@@ -1,0 +1,56 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.node.os2web_meetings_bp.body
+    - field.field.node.os2web_meetings_bp.field_os2web_m_bp_bpas
+    - field.field.node.os2web_meetings_bp.field_os2web_m_bp_closed
+    - field.field.node.os2web_meetings_bp.field_os2web_m_esdh_id
+    - node.type.os2web_meetings_bp
+  module:
+    - text
+    - user
+id: node.os2web_meetings_bp.default
+targetEntityType: node
+bundle: os2web_meetings_bp
+mode: default
+content:
+  body:
+    label: hidden
+    type: text_default
+    weight: 101
+    settings: {  }
+    third_party_settings: {  }
+    region: content
+  field_os2web_m_bp_bpas:
+    weight: 103
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    type: entity_reference_label
+    region: content
+  field_os2web_m_bp_closed:
+    weight: 105
+    label: above
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    type: boolean
+    region: content
+  field_os2web_m_esdh_id:
+    weight: 104
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    type: string
+    region: content
+  links:
+    weight: 100
+    settings: {  }
+    third_party_settings: {  }
+    region: content
+hidden: {  }

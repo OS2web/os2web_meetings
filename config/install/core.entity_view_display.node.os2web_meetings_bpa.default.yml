@@ -1,0 +1,46 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.node.os2web_meetings_bpa.body
+    - field.field.node.os2web_meetings_bpa.field_os2web_m_bpa_file
+    - field.field.node.os2web_meetings_bpa.field_os2web_m_esdh_id
+    - node.type.os2web_meetings_bpa
+  module:
+    - file
+    - text
+    - user
+id: node.os2web_meetings_bpa.default
+targetEntityType: node
+bundle: os2web_meetings_bpa
+mode: default
+content:
+  body:
+    label: hidden
+    type: text_default
+    weight: 101
+    settings: {  }
+    third_party_settings: {  }
+    region: content
+  field_os2web_m_bpa_file:
+    weight: 103
+    label: above
+    settings:
+      use_description_as_link_text: true
+    third_party_settings: {  }
+    type: file_default
+    region: content
+  field_os2web_m_esdh_id:
+    weight: 102
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    type: string
+    region: content
+  links:
+    weight: 100
+    settings: {  }
+    third_party_settings: {  }
+    region: content
+hidden: {  }

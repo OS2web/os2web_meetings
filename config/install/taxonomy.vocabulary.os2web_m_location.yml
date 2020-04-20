@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - os2web_meetings
+name: Location
+vid: os2web_m_location
+description: ''
+weight: 0
