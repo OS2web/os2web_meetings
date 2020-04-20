@@ -1,4 +1,4 @@
-# OS2Web Meetings Drupal module
+# OS2Web Meetings Drupal module [![Build Status](https://travis-ci.org/OS2web/os2web_meetings.svg?branch=master)](https://travis-ci.org/OS2web/os2web_meetings)
 
 ## Module purpose
 
