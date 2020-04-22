@@ -8,6 +8,7 @@
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\os2web_meetings\Entity\BulletPoint;
 use Drupal\os2web_meetings\Entity\Meeting;
+use Drupal\views\ViewExecutable;
 
 /**
  * Implements hook_ENTITY_TYPE_delete().
@@ -42,4 +43,54 @@ function os2web_meetings_node_delete(EntityInterface $entity) {
   elseif ($entity->bundle() == 'os2web_meetings_bp') {
 
   }
+}
+
+/**
+ * Implements hook_preprocess_paragraph.
+ *
+ * Adding meeting search form into paragraph.
+ */
+function os2web_meetings_preprocess_paragraph__os2web_meetings_search(&$variables) {
+  $variables['content'] = views_embed_view('os2web_meetings_search', 'os2web_meetings_embed_search_simple');
+}
+
+/**
+ * Implements HOOK_views_pre_view().
+ */
+function os2web_meetings_views_pre_view(ViewExecutable $view) {
+  if ($view->id() !== 'os2web_meetings_search' || $view->current_display !== 'os2web_meetings_embed_search_simple') {
+    return;
+  }
+
+  // Fetching filter info.
+  $filters = $view->display_handler->getOption('filters');
+  $groupInfo = $filters['field_os2web_m_start_date_value']['group_info'];
+
+  // Creating new filter array.
+  $yearNow = date("Y");
+
+  $options = [];
+  $options[] = strval($yearNow - 2);
+  $options[] = strval($yearNow - 1);
+  $options[] = strval($yearNow);
+  $options[] = strval($yearNow + 1);
+  $options[] = strval($yearNow + 2);
+
+  for ($i = 0; $i < count($options); $i++) {
+    $year = $options[$i];
+    $groupInfo['group_items'][$i + 1] = [
+      'title' => $year,
+      'operator' => 'between',
+      'value' => [
+        'type' => 'date',
+        'value' => '',
+        'min' => $year . '-01-01 00:00:00',
+        'max' => $year . '-12-31 23:59:59',
+      ],
+    ];
+  }
+
+  // Overriding filters.
+  $filters['field_os2web_m_start_date_value']['group_info'] = $groupInfo;
+  $view->display_handler->overrideOption('filters', $filters);
 }
