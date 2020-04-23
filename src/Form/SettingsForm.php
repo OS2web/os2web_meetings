@@ -65,6 +65,14 @@ class SettingsForm extends ConfigFormBase {
         ->get('unpublish_missing_agendas'),
     ];
 
+    $form['meetings_import_details']['process_enclosures_as_attachments'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Process enclosures (file) as attachments'),
+      '#description' => t('This decides if the enclosures shall be processed as the attachments with files. If unchecked enclosures will be added to the list of bullet point enclosures.'),
+      '#default_value' => $this->config(SettingsForm::$configName)
+        ->get('process_enclosures_as_attachments'),
+    ];
+
     $form['meetings_import_details']['clear_html_tags_list'] = [
       '#type' => 'textfield',
       '#title' => t('Clear HTML tags'),

@@ -167,11 +167,18 @@ interface MeetingsDirectoryInterface extends ImportAwareInterface {
    *           0 => [
    *             'id' => '456'
    *             'title' => 'Bullet title',
-   *             'body' => 'Bullet body', // can be empty
-   *             'uri' => [relative path to file], // can be empty
+   *             'body' => 'Bullet body',
    *             'access' => TRUE/FALSE,
    *           ],
-   *       ]
+   *       ],
+   *       'enclosures' => [
+   *          0 => [
+   *             'id' => '456'
+   *             'title' => 'Bullet title',
+   *             'uri' => [relative path to file],
+   *             'access' => TRUE/FALSE,
+   *          ],
+   *       ],
    *     ],
    *     ...
    *   ]

@@ -3,6 +3,7 @@
 namespace Drupal\os2web_meetings\Plugin\migrate\source;
 
 use Drupal\Core\File\FileSystemInterface;
+use Drupal\file\Entity\File;
 use Drupal\migrate\Event\MigrateImportEvent;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\migrate\Row;
@@ -42,6 +43,13 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
    * @var bool
    */
   protected $unpublishMissingAgendas;
+
+  /**
+   * If enclosures shall be processed as attachments.
+   *
+   * @var bool
+   */
+  protected $processEnclosuresAsAttachments;
 
   /**
    * List of meetings that will be unpublished after the import process.
@@ -120,6 +128,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
 
     $this->importClosedAgenda = $settingFormConfig->get('import_closed_agenda');
     $this->unpublishMissingAgendas = $settingFormConfig->get('unpublish_missing_agendas');
+    $this->processEnclosuresAsAttachments = $settingFormConfig->get('process_enclosures_as_attachments');
     $this->clearHtmlTagsList = str_getcsv($settingFormConfig->get('clear_html_tags_list'));
 
     parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
@@ -393,6 +402,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       // If access is not set explicitly, consider it as open.
       $access = $bulletPoint['access'] ?? TRUE;
       $attachments = $bulletPoint['attachments'];
+      $enclosures = $bulletPoint['enclosures'];
 
       // Handling closed content.
       if (!$this->importClosedAgenda && $access === FALSE) {
@@ -402,6 +412,16 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       $bp = NULL;
       if ($meeting) {
         $bp = $meeting->getBulletPointByEsdhId($id);
+      }
+
+      // Processing enclosures.
+      if ($this->processEnclosuresAsAttachments) {
+        $attachments = array_merge($attachments, $enclosures);
+
+        $enclosure_targets = [];
+      }
+      else {
+        $enclosure_targets = $this->processEnclosures($enclosures, $directoryPath);
       }
 
       // Processing attachments.
@@ -425,6 +445,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       }
 
       // Setting fields.
+      $bp->set('field_os2web_m_bp_enclosures', $enclosure_targets);
       $bp->set('field_os2web_m_bp_bpas', $bpa_targets);
       $bp->set('field_os2web_m_bp_closed', ['value' => !$access]);
 
@@ -437,6 +458,67 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
 
     // TODO think about deleting the BPs.
     return $bulletPointsTargets;
+  }
+
+  /**
+   * Handles finding the bullets or creating them.
+   *
+   * @param array $attachments
+   *   Bullet point attachments in canonical format.
+   * @param string $directoryPath
+   *   Directory of meeting XML file.
+   * @param \Drupal\os2web_meetings\Entity\BulletPoint|null $bulletPoint
+   *   Parent bullet point.
+   *
+   * @return array
+   *   Array of bullet point attachment nodes, like entity reference targets:
+   *   [
+   *     0 => [
+   *       'target_id' => 1,
+   *     ],
+   *     ...
+   *   ]
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   *
+   * @see \Drupal\os2web_meetings\Plugin\migrate\source\MeetingsDirectory::convertAttachmentsToCanonical()
+   */
+  protected function processEnclosures(array $enclosures, $directoryPath, $bulletPoint = NULL) {
+    $enclosureTargets = [];
+
+    foreach ($enclosures as $enclosure) {
+      $title = $enclosure['title'];
+      $uri = $enclosure['uri'];
+      // If access is not set explicitly, consider it as open.
+      $access = $enclosure['access'] ?? TRUE;
+
+      // Handling closed content.
+      if (!$this->importClosedAgenda && $access === FALSE) {
+        continue;
+      }
+
+      $enclosure = NULL;
+
+      if ($bulletPoint) {
+        $enclosure = $bulletPoint->getEnclosureByName($title);
+      }
+
+      // Creating enclosure file.
+      if (!$enclosure && $uri) {
+        $absoluteUri = $directoryPath . '/' . $uri;
+        $enclosure = $this->createFileCopyAsManaged($absoluteUri);
+      }
+
+      if ($enclosure) {
+        $enclosureTargets[] = [
+          'target_id' => $enclosure->id(),
+          'description' => $title,
+        ];
+      }
+    }
+
+    // TODO think about deleting the enclosures.
+    return $enclosureTargets;
   }
 
   /**
@@ -496,7 +578,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       }
 
       // Setting fields.
-      $bpa->set('body', ['value' => $body]);
+      $bpa->set('body', ['value' => $body, 'format' => 'wysiwyg_tekst']);
 
       // Handling attachment file.
       if ($uri) {

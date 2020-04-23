@@ -2,6 +2,7 @@
 
 namespace Drupal\os2web_meetings\Entity;
 
+use Drupal\file\Entity\File;
 use Drupal\node\Entity\Node;
 
 /**
@@ -30,6 +31,58 @@ class BulletPoint extends Os2webNodeBase {
     ]);
     if ($entity = reset($entities)) {
       return new BulletPoint($entity);
+    }
+
+    return NULL;
+  }
+
+  /**
+   * Returns related enclosures.
+   *
+   * @param bool $load
+   *   If the returned file shall be load. If FALSE, array of fids is returned.
+   *
+   * @return array
+   *   If load is TRUE array of files is returned,
+   *   If load is FALSE array of fids is returned,
+   *   If field is empty, empty array is returned.
+   */
+  public function getEnclosures($load = TRUE) {
+    if ($fieldEnclosures = $this->getEntity()->get('field_os2web_m_bp_enclosures')) {
+      if ($load) {
+        return $fieldEnclosures->referencedEntities();
+      }
+      else {
+        return array_column($fieldEnclosures->getValue(), 'target_id');
+      }
+    }
+
+    return [];
+  }
+
+  /**
+   * Returns enclosure having this name.
+   *
+   * @param string $name
+   *   Expected name of the enclosure.
+   * @param bool $load
+   *   If the returned file shall be load. If FALSE, fid is returned.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface|int|null
+   *   File, or File fid.
+   *   NULL is nothing is found.
+   */
+  public function getEnclosureByName($name, $load = TRUE) {
+    // Getting all Enclosure IDs of this bullet point.
+    if ($fieldEnclosures = $this->getEntity()->get('field_os2web_m_bp_enclosures')) {
+      $enclosure_targets = $fieldEnclosures->getValue();
+
+      foreach ($enclosure_targets as $enclosure_target) {
+        if ($enclosure_target['description'] === $name) {
+          $fid = $enclosure_target['target_id'];
+          return ($load) ? File::load($fid) : $fid;
+        }
+      }
     }
 
     return NULL;
