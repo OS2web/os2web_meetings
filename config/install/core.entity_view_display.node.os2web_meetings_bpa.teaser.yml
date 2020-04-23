@@ -1,4 +1,4 @@
-langcode: en
+langcode: da
 status: true
 dependencies:
   config:
@@ -17,17 +17,13 @@ mode: teaser
 content:
   body:
     label: hidden
-    type: text_summary_or_trimmed
-    weight: 101
-    settings:
-      trim_length: 600
-    third_party_settings: {  }
-    region: content
-  links:
-    weight: 100
+    type: text_default
+    weight: 0
     settings: {  }
     third_party_settings: {  }
     region: content
 hidden:
   field_os2web_m_bpa_file: true
   field_os2web_m_esdh_id: true
+  langcode: true
+  links: true

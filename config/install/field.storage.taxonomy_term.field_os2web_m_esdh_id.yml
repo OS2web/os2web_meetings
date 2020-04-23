@@ -1,11 +1,11 @@
-langcode: en
+langcode: da
 status: true
 dependencies:
-  module:
-    - taxonomy
   enforced:
     module:
       - os2web_meetings
+  module:
+    - taxonomy
 id: taxonomy_term.field_os2web_m_esdh_id
 field_name: field_os2web_m_esdh_id
 entity_type: taxonomy_term

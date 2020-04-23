@@ -1,18 +1,19 @@
 langcode: da
 status: true
 dependencies:
-  enforced:
-    module:
-      - os2web_meetings
   module:
+    - file
     - node
-id: node.field_os2web_m_bps
-field_name: field_os2web_m_bps
+id: node.field_os2web_m_bp_enclosures
+field_name: field_os2web_m_bp_enclosures
 entity_type: node
-type: entity_reference
+type: file
 settings:
-  target_type: node
-module: core
+  display_field: false
+  display_default: false
+  uri_scheme: public
+  target_type: file
+module: file
 locked: false
 cardinality: -1
 translatable: true
