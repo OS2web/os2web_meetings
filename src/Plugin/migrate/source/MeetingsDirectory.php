@@ -3,7 +3,6 @@
 namespace Drupal\os2web_meetings\Plugin\migrate\source;
 
 use Drupal\Core\File\FileSystemInterface;
-use Drupal\file\Entity\File;
 use Drupal\migrate\Event\MigrateImportEvent;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\migrate\Row;
@@ -463,8 +462,8 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
   /**
    * Handles finding the bullets or creating them.
    *
-   * @param array $attachments
-   *   Bullet point attachments in canonical format.
+   * @param array $enclosures
+   *   Bullet point enclosures in canonical format.
    * @param string $directoryPath
    *   Directory of meeting XML file.
    * @param \Drupal\os2web_meetings\Entity\BulletPoint|null $bulletPoint
@@ -478,8 +477,6 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
    *     ],
    *     ...
    *   ]
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
    *
    * @see \Drupal\os2web_meetings\Plugin\migrate\source\MeetingsDirectory::convertAttachmentsToCanonical()
    */
