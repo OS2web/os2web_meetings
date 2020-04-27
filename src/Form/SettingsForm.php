@@ -35,12 +35,12 @@ class SettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    // Import settings.
     $form['meetings_import_details'] = [
       '#type' => 'details',
       '#title' => t('Import settings'),
       '#open' => TRUE,
     ];
-
     $form['meetings_import_details']['import_closed_agenda'] = [
       '#type' => 'checkbox',
       '#title' => t('Import closed agenda'),
@@ -79,6 +79,27 @@ class SettingsForm extends ConfigFormBase {
       '#description' => t('Comma-separated list of HTML tags, which style attribute shall be removed during import (it will remove only style HTML attribute of a given tag)'),
       '#default_value' => $this->config(SettingsForm::$configName)
         ->get('clear_html_tags_list'),
+    ];
+
+    // Import view settings.
+    $form['meetings_view_details'] = [
+      '#type' => 'details',
+      '#title' => t('View settings'),
+      '#open' => FALSE,
+    ];
+    $form['meetings_view_details']['resume_bpa_title'] = [
+      '#type' => 'textfield',
+      '#title' => t('Title of Resume field'),
+      '#description' => t('The bullet point attachments with this title will be marked as Resume. Case insensitive'),
+      '#default_value' => $this->config(SettingsForm::$configName)
+        ->get('resume_bpa_title'),
+    ];
+    $form['meetings_view_details']['decision_bpa_title'] = [
+      '#type' => 'textfield',
+      '#title' => t('Title of Beslutning field'),
+      '#description' => t('The bullet point attachments with this title will be marked as Beslutning. Case insensitive'),
+      '#default_value' => $this->config(SettingsForm::$configName)
+        ->get('decision_bpa_title'),
     ];
 
     return parent::buildForm($form, $form_state);

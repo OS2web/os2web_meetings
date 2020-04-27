@@ -8,6 +8,7 @@
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\os2web_meetings\Entity\BulletPoint;
 use Drupal\os2web_meetings\Entity\Meeting;
+use Drupal\os2web_meetings\Form\SettingsForm;
 use Drupal\views\ViewExecutable;
 
 /**
@@ -93,4 +94,58 @@ function os2web_meetings_views_pre_view(ViewExecutable $view) {
   // Overriding filters.
   $filters['field_os2web_m_start_date_value']['group_info'] = $groupInfo;
   $view->display_handler->overrideOption('filters', $filters);
+}
+
+/**
+ * Implements hook_preprocess_node().
+ */
+function os2web_meetings_preprocess_node(&$variables) {
+  if ($variables['node']->getType() == 'os2web_meetings_bp' && $variables['view_mode'] == 'teaser') {
+    $settingFormConfig = \Drupal::config(SettingsForm::$configName);
+    $resumeTitle = $settingFormConfig->get('resume_bpa_title');
+    $decisionTitle = $settingFormConfig->get('decision_bpa_title');
+
+    /** @var Drupal\Core\Field\EntityReferenceFieldItemList $items */
+    $items = $variables['content']['field_os2web_m_bp_bpas']['#items'];
+    $count = $items->count();
+
+    $normalBpa = [];
+    for ($i = 0; $i < $count; $i++) {
+      // Saving BPA render and removing it from a list.
+      $bpa_render = $variables['content']['field_os2web_m_bp_bpas'][$i];
+      unset($variables['content']['field_os2web_m_bp_bpas'][$i]);
+
+      /** @var \Drupal\node\NodeInterface $bpa */
+      $bpa = $bpa_render['#node'];
+
+      // If that a special BPA (Resume or Desicison) add it to special meta
+      // field, otherwise save it as normal BPA.
+      if (!empty($resumeTitle) && strcasecmp($bpa->getTitle(), $resumeTitle) === 0) {
+        $variables['content']['#resume'] = $bpa_render;
+      }
+      elseif (!empty($decisionTitle) && strcasecmp($bpa->getTitle(), $decisionTitle) === 0) {
+        $variables['content']['#decision'] = $bpa_render;
+      }
+      else {
+        $normalBpa[] = $bpa_render;
+      }
+    }
+
+    // Add normal BPA back to the render array.
+    $variables['content']['field_os2web_m_bp_bpas'] = array_merge($variables['content']['field_os2web_m_bp_bpas'], $normalBpa);
+  }
+  if ($variables['node']->getType() == 'os2web_meetings_bpa' && $variables['view_mode'] == 'teaser') {
+    $settingFormConfig = \Drupal::config(SettingsForm::$configName);
+    $resumeTitle = $settingFormConfig->get('resume_bpa_title');
+    $decisionTitle = $settingFormConfig->get('decision_bpa_title');
+
+    $bpa = $variables['node'];
+    // Adding class based on the BPA title.
+    if (!empty($resumeTitle) && strcasecmp($bpa->getTitle(), $resumeTitle) === 0) {
+      $variables['attributes']['class'][] = 'os2wm-bpa-resume';
+    }
+    elseif (!empty($decisionTitle) && strcasecmp($bpa->getTitle(), $decisionTitle) === 0) {
+      $variables['attributes']['class'][] = 'os2wm-bpa-decision';
+    }
+  }
 }
