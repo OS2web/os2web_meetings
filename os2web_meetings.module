@@ -100,7 +100,13 @@ function os2web_meetings_views_pre_view(ViewExecutable $view) {
  * Implements hook_preprocess_node().
  */
 function os2web_meetings_preprocess_node(&$variables) {
-  if ($variables['node']->getType() == 'os2web_meetings_bp' && $variables['view_mode'] == 'teaser') {
+  if ($variables['node']->getType() == 'os2web_meetings_meeting') {
+    /** @var \Drupal\Core\Datetime\DrupalDateTime $start_date */
+    $start_date = $variables['node']->field_os2web_m_start_date->date;
+    $month_value =  $start_date->format('m');
+    $variables['attributes']['class'][] = "month--$month_value";
+  }
+  elseif ($variables['node']->getType() == 'os2web_meetings_bp' && $variables['view_mode'] == 'teaser') {
     $settingFormConfig = \Drupal::config(SettingsForm::$configName);
     $resumeTitle = $settingFormConfig->get('resume_bpa_title');
     $decisionTitle = $settingFormConfig->get('decision_bpa_title');
@@ -134,7 +140,7 @@ function os2web_meetings_preprocess_node(&$variables) {
     // Add normal BPA back to the render array.
     $variables['content']['field_os2web_m_bp_bpas'] = array_merge($variables['content']['field_os2web_m_bp_bpas'], $normalBpa);
   }
-  if ($variables['node']->getType() == 'os2web_meetings_bpa' && $variables['view_mode'] == 'teaser') {
+  elseif ($variables['node']->getType() == 'os2web_meetings_bpa' && $variables['view_mode'] == 'teaser') {
     $settingFormConfig = \Drupal::config(SettingsForm::$configName);
     $resumeTitle = $settingFormConfig->get('resume_bpa_title');
     $decisionTitle = $settingFormConfig->get('decision_bpa_title');
