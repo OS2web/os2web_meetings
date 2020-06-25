@@ -24,7 +24,7 @@ third_party_settings:
     unpublish_enable: false
     unpublish_required: false
     unpublish_revision: false
-name: 'OS2Web Bullet point attachment'
+name: 'Bilag'
 type: os2web_meetings_bpa
 description: ''
 help: ''

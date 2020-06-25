@@ -24,7 +24,7 @@ third_party_settings:
     unpublish_enable: false
     unpublish_required: false
     unpublish_revision: false
-name: 'OS2Web Meeting'
+name: 'Møde'
 type: os2web_meetings_meeting
 description: ''
 help: ''
