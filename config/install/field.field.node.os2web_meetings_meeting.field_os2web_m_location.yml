@@ -9,7 +9,7 @@ id: node.os2web_meetings_meeting.field_os2web_m_location
 field_name: field_os2web_m_location
 entity_type: node
 bundle: os2web_meetings_meeting
-label: Location
+label: Lokation
 description: ''
 required: false
 translatable: false

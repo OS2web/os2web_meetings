@@ -9,7 +9,7 @@ id: node.os2web_meetings_meeting.field_os2web_m_committee
 field_name: field_os2web_m_committee
 entity_type: node
 bundle: os2web_meetings_meeting
-label: Committee
+label: Udvalg
 description: ''
 required: false
 translatable: false
