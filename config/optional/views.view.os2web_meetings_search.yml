@@ -74,6 +74,14 @@ display:
                     filter_rewrite_values: ''
                   collapsible: false
                   is_secondary: false
+              field_os2web_m_start_date_value:
+                plugin_id: default
+                advanced:
+                  placeholder_text: ''
+                  rewrite:
+                    filter_rewrite_values: ''
+                  collapsible: false
+                  is_secondary: false
       pager:
         type: mini
         options:
@@ -227,7 +235,7 @@ display:
             operator: field_os2web_m_committee_target_id_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: field_os2web_m_committee_target_id
+            identifier: ud
             required: false
             remember: false
             multiple: false
@@ -291,7 +299,7 @@ display:
           group_info:
             label: Årstal
             description: ''
-            identifier: field_os2web_m_start_date_value
+            identifier: ar
             optional: true
             widget: select
             multiple: false
@@ -333,7 +341,7 @@ display:
       relationships: {  }
       arguments: {  }
       display_extenders: {  }
-      use_ajax: true
+      use_ajax: false
     cache_metadata:
       max-age: -1
       contexts:

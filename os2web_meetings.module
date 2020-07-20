@@ -77,9 +77,10 @@ function os2web_meetings_views_pre_view(ViewExecutable $view) {
   $options[] = strval($yearNow + 1);
   $options[] = strval($yearNow + 2);
 
+  $groupInfo['group_items'] = [];
   for ($i = 0; $i < count($options); $i++) {
     $year = $options[$i];
-    $groupInfo['group_items'][$i + 1] = [
+    $groupInfo['group_items'][$year] = [
       'title' => $year,
       'operator' => 'between',
       'value' => [
@@ -93,6 +94,7 @@ function os2web_meetings_views_pre_view(ViewExecutable $view) {
 
   // Overriding filters.
   $filters['field_os2web_m_start_date_value']['group_info'] = $groupInfo;
+
   $view->display_handler->overrideOption('filters', $filters);
 }
 
