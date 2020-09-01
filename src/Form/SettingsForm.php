@@ -48,6 +48,13 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => $this->config(SettingsForm::$configName)
         ->get('import_closed_agenda'),
     ];
+    $form['meetings_import_details']['closed_bp_body_text'] = [
+      '#type' => 'textfield',
+      '#title' => t('Text for closed bullet point'),
+      '#description' => t('Text that will be shown in closed bullet point'),
+      '#default_value' => $this->config(SettingsForm::$configName)
+        ->get('closed_bp_body_text'),
+    ];
 
     $form['meetings_import_details']['committee_whitelist'] = [
       '#type' => 'textfield',

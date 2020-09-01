@@ -114,8 +114,11 @@ function os2web_meetings_preprocess_node(&$variables) {
     $decisionTitle = $settingFormConfig->get('decision_bpa_title');
 
     /** @var Drupal\Core\Field\EntityReferenceFieldItemList $items */
-    $items = $variables['content']['field_os2web_m_bp_bpas']['#items'];
-    $count = $items->count();
+    $count = 0;
+    if (isset($variables['content']['field_os2web_m_bp_bpas']['#items'])) {
+      $items = $variables['content']['field_os2web_m_bp_bpas']['#items'];
+      $count = isset($items)? $items->count() : 0;
+    }
 
     $normalBpa = [];
     for ($i = 0; $i < $count; $i++) {

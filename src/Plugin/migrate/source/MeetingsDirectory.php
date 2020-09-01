@@ -36,6 +36,13 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
    */
   protected $importClosedAgenda;
 
+   /**
+   * Standart content for closed bullet points.
+   *
+   * @var bool
+   */
+  protected $closedBulletPointBodyText;
+
   /**
    * If missing agendas meeting nodes need to be unpublished.
    *
@@ -126,6 +133,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     $this->committeesWhitelist = !empty($committeesWhitelistSettings) ? explode(',', $committeesWhitelistSettings) : [];
 
     $this->importClosedAgenda = $settingFormConfig->get('import_closed_agenda');
+    $this->closedBulletPointBodyText = $settingFormConfig->get('closed_bp_body_text');
     $this->unpublishMissingAgendas = $settingFormConfig->get('unpublish_missing_agendas');
     $this->processEnclosuresAsAttachments = $settingFormConfig->get('process_enclosures_as_attachments');
     $this->clearHtmlTagsList = str_getcsv($settingFormConfig->get('clear_html_tags_list'));
@@ -402,36 +410,33 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       $access = $bulletPoint['access'] ?? TRUE;
       $attachments = $bulletPoint['attachments'];
       $enclosures = $bulletPoint['enclosures'];
-
-      // Handling closed content.
-      if (!$this->importClosedAgenda && $access === FALSE) {
-        continue;
-      }
+      $enclosure_targets = [];
+      $bpa_targets = [];
 
       $bp = NULL;
       if ($meeting) {
         $bp = $meeting->getBulletPointByEsdhId($id);
       }
 
-      // Processing enclosures.
-      if ($this->processEnclosuresAsAttachments) {
-        $attachments = array_merge($attachments, $enclosures);
+    if ($this->importClosedAgenda || $access === TRUE) {
+        // Processing enclosures.
+        if ($this->processEnclosuresAsAttachments) {
+          $attachments = array_merge($attachments, $enclosures);
+          $enclosure_targets = [];
+        }
+        else {
+          $enclosure_targets = $this->processEnclosures($enclosures, $directoryPath);
+        }
 
-        $enclosure_targets = [];
-      }
-      else {
-        $enclosure_targets = $this->processEnclosures($enclosures, $directoryPath);
-      }
-
-      // Processing attachments.
-      if ($bp) {
-        $os2webBp = new BulletPoint($bp);
-        $bpa_targets = $this->processAttachments($attachments, $directoryPath, $os2webBp);
-      }
-      else {
-        $bpa_targets = $this->processAttachments($attachments, $directoryPath);
-      }
-
+        // Processing attachments.
+        if ($bp) {
+          $os2webBp = new BulletPoint($bp);
+          $bpa_targets = $this->processAttachments($attachments, $directoryPath, $os2webBp);
+        }
+        else {
+          $bpa_targets = $this->processAttachments($attachments, $directoryPath);
+        }
+     }
       if (!$bp) {
         $bp = Node::create([
           'type' => 'os2web_meetings_bp',
@@ -447,6 +452,9 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       $bp->set('field_os2web_m_bp_enclosures', $enclosure_targets);
       $bp->set('field_os2web_m_bp_bpas', $bpa_targets);
       $bp->set('field_os2web_m_bp_closed', ['value' => !$access]);
+      if ($access === FALSE){
+        $bp->set('body', $this->closedBulletPointBodyText);
+    }
 
       $bp->save();
 
