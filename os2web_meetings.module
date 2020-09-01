@@ -157,3 +157,20 @@ function os2web_meetings_preprocess_node(&$variables) {
     }
   }
 }
+
+/**
+ * Implements hook_preprocess_field().
+ */
+function os2web_meetings_preprocess_field__node__field_os2web_m_bp_enclosures(&$variables) {
+  $settingFormConfig = \Drupal::config(SettingsForm::$configName);
+  $limit = $settingFormConfig->get('enclosures_max_title_length');
+
+  foreach ($variables['items'] as $key => $item) {
+    $description = $variables['items'][$key]['content']['#description'];
+    if (strlen($description) > $limit) {
+      $description = substr($description, 0, $limit) . '...';
+    }
+
+    $variables['items'][$key]['content']['#description'] = $description;
+  }
+}

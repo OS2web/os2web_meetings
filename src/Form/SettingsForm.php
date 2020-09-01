@@ -101,6 +101,14 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => $this->config(SettingsForm::$configName)
         ->get('decision_bpa_title'),
     ];
+    $form['meetings_view_details']['enclosures_max_title_length'] = [
+      '#type' => 'number',
+      '#title' => t('Maximum length for BP enclosures title'),
+      '#description' => t('If enclosure lenght if above the limit, it will be cut and ... will be added.'),
+      '#default_value' => $this->config(SettingsForm::$configName)
+        ->get('enclosures_max_title_length'),
+    ];
+
 
     return parent::buildForm($form, $form_state);
   }
