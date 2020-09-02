@@ -697,6 +697,11 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
   protected function cleanHtml($html) {
     $html = $this->clearHtmlTags($html);
 
+    if ($this->replaceMultipleNbsp) {
+      // Replace multiple &nbsp; tags with single one.
+      $html = preg_replace('/(\x{00A0}|&nbsp;){2,}/u', '&nbsp;', $html);
+    }
+
     if ($this->replaceEmptyParagraphs) {
       // Replace all <p></p> and <p>&nbsp;</p> tags with <br/>.
       $html = preg_replace('#(<p( )*?>((<span>)*?)(|&nbsp;)((<\/span>)*?)<\/p>\s*)+#i', '<br/>', $html);
@@ -706,11 +711,6 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       // Replace multiple <br> tags with single one.
       // Counts also <br>, <br/> and <br />. Case insensitive.
       $html = preg_replace('/(\<br\>|\<br\/\>|\<br\ \/\>){2,}/i', '<br/>', $html);
-    }
-
-    if ($this->replaceMultipleNbsp) {
-      // Replace multiple &nbsp; tags with single one.
-      $html = preg_replace('/(\x{00A0}|&nbsp;){2,}/u', '&nbsp;', $html);
     }
 
     return $html;
