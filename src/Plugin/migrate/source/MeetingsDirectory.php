@@ -76,6 +76,27 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
   protected $clearHtmlTagsList;
 
   /**
+   * If replace empty Paragraphs with br-tag.
+   *
+   * @var bool
+   */
+  protected $replaceEmptyParagraphs;
+
+  /**
+   * If replace multiple concurrent break-line with a single one.
+   *
+   * @var bool
+   */
+  protected $replaceMultipleBr;
+
+  /**
+   * If replace multiple concurrent non-breakable-space with a single one.
+   *
+   * @var bool
+   */
+  protected $replaceMultipleNbsp;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration) {
@@ -137,6 +158,9 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     $this->unpublishMissingAgendas = $settingFormConfig->get('unpublish_missing_agendas');
     $this->processEnclosuresAsAttachments = $settingFormConfig->get('process_enclosures_as_attachments');
     $this->clearHtmlTagsList = str_getcsv($settingFormConfig->get('clear_html_tags_list'));
+    $this->replaceEmptyParagraphs = $settingFormConfig->get('replace_empty_paragraphs');
+    $this->replaceMultipleBr = $settingFormConfig->get('replace_multiple_br');
+    $this->replaceMultipleNbsp = $settingFormConfig->get('replace_multiple_nbsp');
 
     parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
   }
@@ -552,7 +576,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     foreach ($attachments as $attachment) {
       $id = $attachment['id'];
       $title = $attachment['title'];
-      $body = $this->clearHtmlTags($attachment['body']);
+      $body = $this->cleanHtml($attachment['body']);
       $uri = $attachment['uri'];
       // If access is not set explicitly, consider it as open.
       $access = $attachment['access'] ?? TRUE;
@@ -659,6 +683,37 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     $managedFile = file_save_data($data, $unmanagedFilePath, FileSystemInterface::EXISTS_REPLACE);
 
     return $managedFile;
+  }
+
+  /**
+   * Wrapper function for making HTML cleaner.
+   *
+   * @param string $html
+   *   Input HTML text.
+   *
+   * @return string
+   *   Cleaned HTML.
+   */
+  protected function cleanHtml($html) {
+    $html = $this->clearHtmlTags($html);
+
+    if ($this->replaceEmptyParagraphs) {
+      // Replace all <p></p> and <p>&nbsp;</p> tags with <br/>.
+      $html = preg_replace('#(<p( )*?>((<span>)*?)(|&nbsp;)((<\/span>)*?)<\/p>\s*)+#i', '<br/>', $html);
+    }
+
+    if ($this->replaceMultipleBr) {
+      // Replace multiple <br> tags with single one.
+      // Counts also <br>, <br/> and <br />. Case insensitive.
+      $html = preg_replace('/(\<br\>|\<br\/\>|\<br\ \/\>){2,}/i', '<br/>', $html);
+    }
+
+    if ($this->replaceMultipleNbsp) {
+      // Replace multiple &nbsp; tags with single one.
+      $html = preg_replace('/(\x{00A0}|&nbsp;){2,}/u', '&nbsp;', $html);
+    }
+
+    return $html;
   }
 
   /**

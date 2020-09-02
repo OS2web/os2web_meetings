@@ -93,6 +93,36 @@ class SettingsForm extends ConfigFormBase {
         ->get('clear_html_tags_list'),
     ];
 
+    $form['meetings_import_details']['replace_empty_paragraphs'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Replace empty Paragraphs with br-tag'),
+      '#description' => t('Replace all %ptag and %ptag2 tags with %brtag', [
+        '%ptag' => '<p></p>',
+        '%ptag2' => '<p>&nbsp;</p>',
+        '%brtag' => '<br/>',
+      ]),
+      '#default_value' => $this->config(SettingsForm::$configName)
+        ->get('replace_empty_paragraphs'),
+    ];
+
+    $form['meetings_import_details']['replace_multiple_br'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Replace multiple concurrent break-line with a single one'),
+      '#description' => t('Replace all occurrences of multiple %brtag tags with single one', [
+        '%brtag' => '<br/>',
+      ]),
+      '#default_value' => $this->config(SettingsForm::$configName)
+        ->get('replace_multiple_br'),
+    ];
+
+    $form['meetings_import_details']['replace_multiple_nbsp'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Replace multiple concurrent non-breakable-space with a single one'),
+      '#description' => t('Replace all occurrences of multiple %nbsp tags with single one', ['%nbsp' => '&nbsp;']),
+      '#default_value' => $this->config(SettingsForm::$configName)
+        ->get('replace_multiple_nbsp'),
+    ];
+
     // Import view settings.
     $form['meetings_view_details'] = [
       '#type' => 'details',
