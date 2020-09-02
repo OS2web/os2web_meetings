@@ -44,16 +44,21 @@ class SettingsForm extends ConfigFormBase {
     $form['meetings_import_details']['import_closed_agenda'] = [
       '#type' => 'checkbox',
       '#title' => t('Import closed agenda'),
-      '#description' => t('If closed agenda will be imported, otherwise the closed content is skipped'),
+      '#description' => t('If closed agenda will be imported, otherwise the closed bullet point is imported empty, and its children are skipped'),
       '#default_value' => $this->config(SettingsForm::$configName)
         ->get('import_closed_agenda'),
     ];
     $form['meetings_import_details']['closed_bp_body_text'] = [
-      '#type' => 'textfield',
+      '#type' => 'textarea',
       '#title' => t('Text for closed bullet point'),
-      '#description' => t('Text that will be shown in closed bullet point'),
+      '#description' => t('Text that will be shown in closed bullet point body'),
       '#default_value' => $this->config(SettingsForm::$configName)
         ->get('closed_bp_body_text'),
+      '#states' => [
+        'visible' => [
+          ':input[name="import_closed_agenda"]' => ['checked' => FALSE],
+        ],
+      ],
     ];
 
     $form['meetings_import_details']['committee_whitelist'] = [

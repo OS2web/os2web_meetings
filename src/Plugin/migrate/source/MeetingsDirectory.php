@@ -36,8 +36,8 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
    */
   protected $importClosedAgenda;
 
-   /**
-   * Standart content for closed bullet points.
+  /**
+   * Standard content for closed bullet points.
    *
    * @var bool
    */
@@ -418,7 +418,19 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
         $bp = $meeting->getBulletPointByEsdhId($id);
       }
 
-    if ($this->importClosedAgenda || $access === TRUE) {
+      if (!$bp) {
+        $bp = Node::create([
+          'type' => 'os2web_meetings_bp',
+          'field_os2web_m_esdh_id' => $id,
+          'title' => $title,
+        ]);
+        $bp->save();
+      }
+      else {
+        $bp->setTitle($title);
+      }
+
+      if ($this->importClosedAgenda || $access === TRUE) {
         // Processing enclosures.
         if ($this->processEnclosuresAsAttachments) {
           $attachments = array_merge($attachments, $enclosures);
@@ -429,33 +441,18 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
         }
 
         // Processing attachments.
-        if ($bp) {
-          $os2webBp = new BulletPoint($bp);
-          $bpa_targets = $this->processAttachments($attachments, $directoryPath, $os2webBp);
-        }
-        else {
-          $bpa_targets = $this->processAttachments($attachments, $directoryPath);
-        }
-     }
-      if (!$bp) {
-        $bp = Node::create([
-          'type' => 'os2web_meetings_bp',
-          'field_os2web_m_esdh_id' => $id,
-          'title' => $title,
-        ]);
+        $os2webBp = new BulletPoint($bp);
+        $bpa_targets = $this->processAttachments($attachments, $directoryPath, $os2webBp);
       }
       else {
-        $bp->setTitle($title);
+        // Set closed bullet point text.
+        $bp->set('body', $this->closedBulletPointBodyText);
       }
 
       // Setting fields.
       $bp->set('field_os2web_m_bp_enclosures', $enclosure_targets);
       $bp->set('field_os2web_m_bp_bpas', $bpa_targets);
       $bp->set('field_os2web_m_bp_closed', ['value' => !$access]);
-      if ($access === FALSE){
-        $bp->set('body', $this->closedBulletPointBodyText);
-    }
-
       $bp->save();
 
       $bulletPointsTargets[] = [
@@ -533,7 +530,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
    *   Bullet point attachments in canonical format.
    * @param string $directoryPath
    *   Directory of meeting XML file.
-   * @param \Drupal\os2web_meetings\Entity\BulletPoint|null $bulletPoint
+   * @param \Drupal\os2web_meetings\Entity\BulletPoint $bulletPoint
    *   Parent bullet point.
    *
    * @return array
@@ -549,7 +546,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
    *
    * @see \Drupal\os2web_meetings\Plugin\migrate\source\MeetingsDirectory::convertAttachmentsToCanonical()
    */
-  protected function processAttachments(array $attachments, $directoryPath, $bulletPoint = NULL) {
+  protected function processAttachments(array $attachments, $directoryPath, $bulletPoint) {
     $bpaTargets = [];
 
     foreach ($attachments as $attachment) {
@@ -565,11 +562,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
         continue;
       }
 
-      $bpa = NULL;
-
-      if ($bulletPoint) {
-        $bpa = $bulletPoint->getBulletPointAttachmentByEsdhId($id);
-      }
+      $bpa = $bulletPoint->getBulletPointAttachmentByEsdhId($id);
 
       if (!$bpa) {
         $bpa = Node::create([
@@ -635,7 +628,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       $separator = '/';
     }
 
-    // Destination file already exists, generate an alternative.
+    // Making sure that name does not contain extension.
     $pos = strrpos($basename, '.');
     if ($pos !== FALSE) {
       $name = substr($basename, 0, $pos);
@@ -646,7 +639,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       $ext = '';
     }
 
-    // If the desired title it provided, use it. Otherwise take the original
+    // If the desired title is provided, use it. Otherwise take the original
     // title and concat '_0'.
     if ($title) {
       $name = $title;

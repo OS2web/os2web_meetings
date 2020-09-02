@@ -105,7 +105,7 @@ function os2web_meetings_preprocess_node(&$variables) {
   if ($variables['node']->getType() == 'os2web_meetings_meeting') {
     /** @var \Drupal\Core\Datetime\DrupalDateTime $start_date */
     $start_date = $variables['node']->field_os2web_m_start_date->date;
-    $month_value =  $start_date->format('m');
+    $month_value = $start_date->format('m');
     $variables['attributes']['class'][] = "month--$month_value";
   }
   elseif ($variables['node']->getType() == 'os2web_meetings_bp' && $variables['view_mode'] == 'teaser') {
@@ -117,7 +117,7 @@ function os2web_meetings_preprocess_node(&$variables) {
     $count = 0;
     if (isset($variables['content']['field_os2web_m_bp_bpas']['#items'])) {
       $items = $variables['content']['field_os2web_m_bp_bpas']['#items'];
-      $count = isset($items)? $items->count() : 0;
+      $count = isset($items) ? $items->count() : 0;
     }
 
     $normalBpa = [];
