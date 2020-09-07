@@ -76,6 +76,13 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
   protected $clearHtmlTagsList;
 
   /**
+   * If replace multiple concurrent non-breakable-space with a single one.
+   *
+   * @var bool
+   */
+  protected $replaceMultipleNbsp;
+
+  /**
    * If replace empty Paragraphs with br-tag.
    *
    * @var bool
@@ -83,18 +90,11 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
   protected $replaceEmptyParagraphs;
 
   /**
-   * If replace multiple concurrent break-line with a single one.
+   * Maximum allowed amount of sequential br-tags.
    *
-   * @var bool
+   * @var int
    */
-  protected $replaceMultipleBr;
-
-  /**
-   * If replace multiple concurrent non-breakable-space with a single one.
-   *
-   * @var bool
-   */
-  protected $replaceMultipleNbsp;
+  protected $maxSequentialBr;
 
   /**
    * {@inheritdoc}
@@ -158,9 +158,9 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     $this->unpublishMissingAgendas = $settingFormConfig->get('unpublish_missing_agendas');
     $this->processEnclosuresAsAttachments = $settingFormConfig->get('process_enclosures_as_attachments');
     $this->clearHtmlTagsList = str_getcsv($settingFormConfig->get('clear_html_tags_list'));
-    $this->replaceEmptyParagraphs = $settingFormConfig->get('replace_empty_paragraphs');
-    $this->replaceMultipleBr = $settingFormConfig->get('replace_multiple_br');
     $this->replaceMultipleNbsp = $settingFormConfig->get('replace_multiple_nbsp');
+    $this->replaceEmptyParagraphs = $settingFormConfig->get('replace_empty_paragraphs');
+    $this->maxSequentialBr = $settingFormConfig->get('max_sequential_br') ?? 1;
 
     parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
   }
@@ -707,11 +707,10 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       $html = preg_replace('#(<p( )*?>((<span>)*?)(|&nbsp;)((<\/span>)*?)<\/p>\s*)+#i', '<br/>', $html);
     }
 
-    if ($this->replaceMultipleBr) {
-      // Replace multiple <br> tags with single one.
-      // Counts also <br>, <br/> and <br />. Case insensitive.
-      $html = preg_replace('/(\<br\>|\<br\/\>|\<br\ \/\>){2,}/i', '<br/>', $html);
-    }
+    $replaceThreshold = $this->maxSequentialBr + 1;
+    // Replace multiple <br> tags, if their sequential number is above limit.
+    // Counts also <br>, <br/> and <br />. Case insensitive.
+    $html = preg_replace('/(\<br\>|\<br\/\>|\<br\ \/\>){' . $replaceThreshold . ',}/i', '', $html);
 
     return $html;
   }

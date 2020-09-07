@@ -93,6 +93,14 @@ class SettingsForm extends ConfigFormBase {
         ->get('clear_html_tags_list'),
     ];
 
+    $form['meetings_import_details']['replace_multiple_nbsp'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Replace multiple sequential non-breakable-space with a single one'),
+      '#description' => t('Replace all occurrences of multiple %nbsp tags with single one', ['%nbsp' => '&nbsp;']),
+      '#default_value' => $this->config(SettingsForm::$configName)
+        ->get('replace_multiple_nbsp'),
+    ];
+
     $form['meetings_import_details']['replace_empty_paragraphs'] = [
       '#type' => 'checkbox',
       '#title' => t('Replace empty Paragraphs with br-tag'),
@@ -105,22 +113,12 @@ class SettingsForm extends ConfigFormBase {
         ->get('replace_empty_paragraphs'),
     ];
 
-    $form['meetings_import_details']['replace_multiple_br'] = [
-      '#type' => 'checkbox',
-      '#title' => t('Replace multiple concurrent break-line with a single one'),
-      '#description' => t('Replace all occurrences of multiple %brtag tags with single one', [
-        '%brtag' => '<br/>',
-      ]),
+    $form['meetings_import_details']['max_sequential_br'] = [
+      '#type' => 'number',
+      '#title' => t('Maximum allowed amount of sequential br-tags'),
+      '#description' => t('Everything above the limit will be removed'),
       '#default_value' => $this->config(SettingsForm::$configName)
-        ->get('replace_multiple_br'),
-    ];
-
-    $form['meetings_import_details']['replace_multiple_nbsp'] = [
-      '#type' => 'checkbox',
-      '#title' => t('Replace multiple concurrent non-breakable-space with a single one'),
-      '#description' => t('Replace all occurrences of multiple %nbsp tags with single one', ['%nbsp' => '&nbsp;']),
-      '#default_value' => $this->config(SettingsForm::$configName)
-        ->get('replace_multiple_nbsp'),
+        ->get('max_sequential_br') ?? 1,
     ];
 
     // Import view settings.
