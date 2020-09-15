@@ -149,7 +149,6 @@ class SettingsForm extends ConfigFormBase {
         ->get('enclosures_max_title_length'),
     ];
 
-
     return parent::buildForm($form, $form_state);
   }
 

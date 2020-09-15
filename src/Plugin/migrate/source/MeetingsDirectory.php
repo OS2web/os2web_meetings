@@ -15,7 +15,6 @@ use Drupal\os2web_meetings\Entity\Meeting;
 use Drupal\os2web_meetings\Form\SettingsForm;
 use Drupal\os2web_meetings\MeetingsDirectoryInterface;
 use Drupal\taxonomy\Entity\Term;
-use FilesystemIterator;
 
 /**
  * Source plugin for retrieving data via URLs.
@@ -104,10 +103,10 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     // very few modifications.
     // Always get UNIX paths, skipping . and .., key as filename, and follow
     // links.
-    $flags = FilesystemIterator::UNIX_PATHS |
-      FilesystemIterator::SKIP_DOTS |
-      FilesystemIterator::KEY_AS_FILENAME |
-      FilesystemIterator::FOLLOW_SYMLINKS;
+    $flags = \FilesystemIterator::UNIX_PATHS |
+      \FilesystemIterator::SKIP_DOTS |
+      \FilesystemIterator::KEY_AS_FILENAME |
+      \FilesystemIterator::FOLLOW_SYMLINKS;
 
     // Recurse through the directory.
     $path = $this->getMeetingsManifestPath();
@@ -570,7 +569,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
    *
    * @see \Drupal\os2web_meetings\Plugin\migrate\source\MeetingsDirectory::convertAttachmentsToCanonical()
    */
-  protected function processAttachments(array $attachments, $directoryPath, $bulletPoint) {
+  protected function processAttachments(array $attachments, $directoryPath, BulletPoint $bulletPoint) {
     $bpaTargets = [];
 
     foreach ($attachments as $attachment) {
