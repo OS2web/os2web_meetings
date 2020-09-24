@@ -445,7 +445,13 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
           'field_os2web_m_esdh_id' => $id,
           'title' => $title,
         ]);
-        $bp->save();
+        try {
+          $bp->save();
+        }
+        catch (\Exception $e) {
+          \Drupal::logger('os2web_meeting')->warning($this->t('Cannot save BP: %error', ['%error' => $e->getMessage()]));
+          continue;
+        }
       }
       else {
         $bp->setTitle($title);
@@ -474,11 +480,17 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       $bp->set('field_os2web_m_bp_enclosures', $enclosure_targets);
       $bp->set('field_os2web_m_bp_bpas', $bpa_targets);
       $bp->set('field_os2web_m_bp_closed', ['value' => !$access]);
-      $bp->save();
 
-      $bulletPointsTargets[] = [
-        'target_id' => $bp->id(),
-      ];
+      try {
+        $bp->save();
+
+        $bulletPointsTargets[] = [
+          'target_id' => $bp->id(),
+        ];
+      }
+      catch (\Exception $e) {
+        \Drupal::logger('os2web_meeting')->warning($this->t('Cannot save BP: %error', ['%error' => $e->getMessage()]));
+      }
     }
 
     // TODO think about deleting the BPs.
@@ -608,11 +620,16 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
         }
       }
 
-      $bpa->save();
+      try {
+        $bpa->save();
 
-      $bpaTargets[] = [
-        'target_id' => $bpa->id(),
-      ];
+        $bpaTargets[] = [
+          'target_id' => $bpa->id(),
+        ];
+      }
+      catch (\Exception $e) {
+        \Drupal::logger('os2web_meeting')->warning($this->t('Cannot save BPA: %error', ['%error' => $e->getMessage()]));
+      }
     }
 
     // TODO think about deleting the BPAs.
