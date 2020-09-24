@@ -307,9 +307,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
 
     $documentFile = $this->createFileCopyAsManaged($uri, $title);
 
-    return [
-      'target_id' => $documentFile->id(),
-    ];
+    return ($documentFile) ? ['target_id' => $documentFile->id()] : [];
   }
 
   /**
@@ -605,7 +603,9 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       if ($uri) {
         $absoluteUri = $directoryPath . '/' . $uri;
         $attachmentFile = $this->createFileCopyAsManaged($absoluteUri);
-        $bpa->set('field_os2web_m_bpa_file', ['target_id' => $attachmentFile->id()]);
+        if ($attachmentFile) {
+          $bpa->set('field_os2web_m_bpa_file', ['target_id' => $attachmentFile->id()]);
+        }
       }
 
       $bpa->save();
@@ -676,10 +676,16 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     // one.
     $copyUri = $dirname . $separator . $name . $ext;
 
-    $unmanagedFilePath = $file_system->copy($uri, $copyUri, FileSystemInterface::EXISTS_REPLACE);
+    $managedFile = FALSE;
+    try {
+      $unmanagedFilePath = $file_system->copy($uri, $copyUri, FileSystemInterface::EXISTS_REPLACE);
 
-    $data = file_get_contents($unmanagedFilePath);
-    $managedFile = file_save_data($data, $unmanagedFilePath, FileSystemInterface::EXISTS_REPLACE);
+      $data = file_get_contents($unmanagedFilePath);
+      $managedFile = file_save_data($data, $unmanagedFilePath, FileSystemInterface::EXISTS_REPLACE);
+    }
+    catch (\Exception $e) {
+      \Drupal::logger('os2web_meeting')->warning($e->getMessage());
+    }
 
     return $managedFile;
   }
