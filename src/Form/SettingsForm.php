@@ -48,6 +48,14 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => $this->config(SettingsForm::$configName)
         ->get('import_closed_agenda'),
     ];
+    $form['meetings_import_details']['closed_bp_title_prefix'] = [
+      '#type' => 'textfield',
+      '#title' => t('Closed bullet point title prefix'),
+      '#description' => t('This text will be prepended before closed bullet point title, space in the end will be added automatically'),
+      '#default_value' => $this->config(SettingsForm::$configName)
+        ->get('closed_bp_title_prefix'),
+    ];
+
     $form['meetings_import_details']['closed_bp_body_text'] = [
       '#type' => 'textarea',
       '#title' => t('Text for closed bullet point'),

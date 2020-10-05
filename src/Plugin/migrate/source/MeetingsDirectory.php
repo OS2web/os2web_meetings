@@ -36,9 +36,16 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
   protected $importClosedAgenda;
 
   /**
+   * Closed bullet point title prefix.
+   *
+   * @var string
+   */
+  protected $closedBulletPointTitlePrefix;
+
+  /**
    * Standard content for closed bullet points.
    *
-   * @var bool
+   * @var string
    */
   protected $closedBulletPointBodyText;
 
@@ -153,6 +160,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     $this->committeesWhitelist = !empty($committeesWhitelistSettings) ? explode(',', $committeesWhitelistSettings) : [];
 
     $this->importClosedAgenda = $settingFormConfig->get('import_closed_agenda');
+    $this->closedBulletPointTitlePrefix = $settingFormConfig->get('closed_bp_title_prefix');
     $this->closedBulletPointBodyText = $settingFormConfig->get('closed_bp_body_text');
     $this->unpublishMissingAgendas = $settingFormConfig->get('unpublish_missing_agendas');
     $this->processEnclosuresAsAttachments = $settingFormConfig->get('process_enclosures_as_attachments');
@@ -426,6 +434,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     $bulletPointsTargets = [];
     foreach ($bulletPoints as $bulletPoint) {
       $id = $bulletPoint['id'];
+      $number = $bulletPoint['number'];
       $title = $bulletPoint['title'];
       // If access is not set explicitly, consider it as open.
       $access = $bulletPoint['access'] ?? TRUE;
@@ -434,6 +443,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       $enclosure_targets = [];
       $bpa_targets = [];
 
+      /** @var \Drupal\node\NodeInterface $bp */
       $bp = NULL;
       if ($meeting) {
         $bp = $meeting->getBulletPointByEsdhId($id);
@@ -472,11 +482,20 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
         $bpa_targets = $this->processAttachments($attachments, $directoryPath, $os2webBp);
       }
       else {
+        $title = $bp->getTitle();
+        if ($titlePrefix = $this->closedBulletPointTitlePrefix) {
+          $bp->setTitle($titlePrefix . ' ' . $title);
+        }
+
         // Set closed bullet point text.
         $bp->set('body', $this->closedBulletPointBodyText);
       }
 
       // Setting fields.
+      if (isset($number)) {
+        $title = $bp->getTitle();
+        $bp->setTitle("$number. $title");
+      }
       $bp->set('field_os2web_m_bp_enclosures', $enclosure_targets);
       $bp->set('field_os2web_m_bp_bpas', $bpa_targets);
       $bp->set('field_os2web_m_bp_closed', ['value' => !$access]);
@@ -586,7 +605,9 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       $id = $attachment['id'];
       $title = $attachment['title'];
       $body = $this->cleanHtml($attachment['body']);
+      $body = $this->fixImagePaths($body, $directoryPath);
       $uri = $attachment['uri'];
+
       // If access is not set explicitly, consider it as open.
       $access = $attachment['access'] ?? TRUE;
 
@@ -765,6 +786,35 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       }
     }
 
+    return $html;
+  }
+
+  /**
+   * Converts relative image paths to absolute.
+   *
+   * @param string $html
+   *   The HTML string.
+   * @param string $meetingDirectoryPath
+   *   Path to the meeting directory.
+   *
+   * @return string
+   *   HTML string with image paths converted to absolute.
+   */
+  protected function fixImagePaths($html, $meetingDirectoryPath) {
+    preg_match_all('/src="([^"]+)"/', $html, $matches);
+
+    foreach ($matches[1] as $path) {
+      $image_uri = file_create_url($meetingDirectoryPath . "/" . $path);
+
+      if (!empty($image_uri)) {
+        $html = str_replace($path, $image_uri, $html);
+      }
+      else {
+        $html = str_replace($path, "", $html);
+      }
+    }
+
+    $html = preg_replace('/<img([^>]+)src=""([^>]*)>/', "", $html);
     return $html;
   }
 

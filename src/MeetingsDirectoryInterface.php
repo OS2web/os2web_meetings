@@ -161,6 +161,7 @@ interface MeetingsDirectoryInterface extends ImportAwareInterface {
    *   [
    *     0 => [
    *       'id' => 123,
+   *       'number' => 1,
    *       'title' => 'Bullet point title',
    *       'access' => TRUE/FALSE, // TRUE is default
    *       'attachments' => [
