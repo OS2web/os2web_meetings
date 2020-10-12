@@ -3,7 +3,6 @@
 namespace Drupal\os2web_meetings\Plugin\migrate\source;
 
 use Drupal\Core\File\FileSystemInterface;
-use Drupal\file\Entity\File;
 use Drupal\migrate\Event\MigrateImportEvent;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\migrate\Row;
