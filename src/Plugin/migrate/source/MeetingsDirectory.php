@@ -606,7 +606,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       $title = $attachment['title'];
       $body = $this->cleanHtml($attachment['body']);
       $body = $this->fixImagePaths($body, $directoryPath);
-      $uri = $attachment['uri'];
+      $uri = $attachment['uri'] ?? NULL;
 
       // If access is not set explicitly, consider it as open.
       $access = $attachment['access'] ?? TRUE;
