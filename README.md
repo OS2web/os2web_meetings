@@ -20,7 +20,7 @@ It is a responsibility of specific ESDH provider module to provide meeting in a 
 Import is handled via Migrate API, which is part of the Drupal 8 core functionality.
 
 ## Additional settings
-Settings are available under ```admin/config/content/os2web-meetings```
+Settings are available under ```admin/config/system/os2web-meetings```
 * **Import closed agenda** - If closed agenda will be imported, otherwise the closed content is skipped.
 * **Whitelist of the committees** - If committee is not whitelisted, its meetings will be ignored.
 * **Unpublish missing agendas** - If this plugin missing agendas will be unpublished. DO NOT use this setting if you are planning to import agendas in with max limit.
