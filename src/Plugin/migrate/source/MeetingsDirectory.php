@@ -3,6 +3,7 @@
 namespace Drupal\os2web_meetings\Plugin\migrate\source;
 
 use Drupal\Core\File\FileSystemInterface;
+use Drupal\file\Entity\File;
 use Drupal\migrate\Event\MigrateImportEvent;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\migrate\Row;
@@ -792,6 +793,9 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
   /**
    * Converts relative image paths to absolute.
    *
+   * If image is located in a private directory it will be copied to a public
+   * directory 'os2web_meeting_images';
+   *
    * @param string $html
    *   The HTML string.
    * @param string $meetingDirectoryPath
@@ -801,21 +805,86 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
    *   HTML string with image paths converted to absolute.
    */
   protected function fixImagePaths($html, $meetingDirectoryPath) {
+    /** @var \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $stream_wrapper_manager */
+    $stream_wrapper_manager = \Drupal::service('stream_wrapper_manager');
+
     preg_match_all('/src="([^"]+)"/', $html, $matches);
 
     foreach ($matches[1] as $path) {
-      $image_uri = file_create_url($meetingDirectoryPath . "/" . $path);
+      $relativeUri = $meetingDirectoryPath . "/" . $path;
+      $imageRealUrl = NULL;
 
-      if (!empty($image_uri)) {
-        $html = str_replace($path, $image_uri, $html);
+      $scheme = $stream_wrapper_manager::getScheme($relativeUri);
+
+      // The image is in the private scheme, copy it to public directory.
+      if ($scheme == 'private') {
+        $relativeUri = $this->copyPrivateImageToPublic($relativeUri);
+      }
+
+      // If file does not exist, remove image path.
+      if (!file_exists($relativeUri)) {
+        $html = str_replace($path, "", $html);
       }
       else {
-        $html = str_replace($path, "", $html);
+        $imageRealUrl = file_create_url($relativeUri);
+        $html = str_replace($path, $imageRealUrl, $html);
       }
     }
 
     $html = preg_replace('/<img([^>]+)src=""([^>]*)>/', "", $html);
     return $html;
+  }
+
+  /**
+   * Copies the file from private directory to a public one.
+   *
+   * Public directory name is 'os2web_meetings_images', and the file destination
+   * directory structure mimics the file source directory structure.
+   *
+   * If file is located in private://sbsys/Meeting 1/Agenda 1/Images/file.jpg,
+   * it wil be copied to
+   * public://os2web_meetings_images/sbsys/Meeting 1/Agenda 1/Images/file.jpg.
+   *
+   * @param string $sourceUri
+   *   Relative uri of the source file.
+   *
+   * @return string|null
+   *   Relative uri of the destination file.
+   *   NULL if file could not be copied for some reasons.
+   */
+  protected function copyPrivateImageToPublic($sourceUri) {
+    $destinationUri = NULL;
+
+    /** @var \Drupal\Core\File\FileSystemInterface $file_system */
+    $file_system = \Drupal::service('file_system');
+
+    $copyDestination = str_replace('private://', 'public://os2web_meetings_images/', $sourceUri);
+
+    // Forcing destination folders to be created.
+    $copyDestinationDir = $file_system->dirname($copyDestination);
+    if ($file_system->prepareDirectory($copyDestinationDir, FileSystemInterface::CREATE_DIRECTORY)) {
+      // Copying the file to public directory.
+      try {
+        $destinationUri = $file_system->copy($sourceUri, $copyDestination);
+      }
+      catch (\Exception $e) {
+        \Drupal::logger('os2web_meetings')
+          ->warning(t('Image cannot be copied from @source to @destination. Message: @message', [
+            '@source' => $sourceUri,
+            '@destination' => $copyDestination,
+            '@message' => $e->getMessage(),
+          ]));
+      }
+    }
+    else {
+      \Drupal::logger('os2web_meetings')
+        ->warning(t('Image cannot be copied from @source to @destination. Destination folder cannot be created', [
+          '@source' => $sourceUri,
+          '@destination' => $copyDestination,
+        ]));
+    }
+
+    return $destinationUri;
   }
 
 }
