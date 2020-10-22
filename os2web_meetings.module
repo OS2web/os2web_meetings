@@ -10,6 +10,7 @@ use Drupal\os2web_meetings\Entity\BulletPoint;
 use Drupal\os2web_meetings\Entity\Meeting;
 use Drupal\os2web_meetings\Form\SettingsForm;
 use Drupal\views\ViewExecutable;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Implements hook_ENTITY_TYPE_delete().
@@ -104,9 +105,10 @@ function os2web_meetings_views_pre_view(ViewExecutable $view) {
 function os2web_meetings_preprocess_node(&$variables) {
   if ($variables['node']->getType() == 'os2web_meetings_meeting') {
     /** @var \Drupal\Core\Datetime\DrupalDateTime $start_date */
-    $start_date = $variables['node']->field_os2web_m_start_date->date;
-    $month_value = $start_date->format('m');
-    $variables['attributes']['class'][] = "month--$month_value";
+    if ($start_date = $variables['node']->field_os2web_m_start_date->date) {
+      $month_value = $start_date->format('m');
+      $variables['attributes']['class'][] = "month--$month_value";
+    }
   }
   elseif ($variables['node']->getType() == 'os2web_meetings_bp' && $variables['view_mode'] == 'teaser') {
     $settingFormConfig = \Drupal::config(SettingsForm::$configName);
@@ -176,4 +178,45 @@ function os2web_meetings_preprocess_field__node__field_os2web_m_bp_enclosures(&$
 
     $variables['items'][$key]['content']['#description'] = $description;
   }
+}
+
+/**
+ * Update entity from yml.
+ *
+ * Some config like form display needs to be updated via config manager.
+ *
+ * @param string $ymlFileName
+ *   Yml file name.
+ * @param string $entityType
+ *   The entity type for this storage.
+ * @param mixed $id
+ *   The ID of the entity to load.
+ * @param array $setComponents
+ *   Array of components you want to add.
+ *   - The key will be what we are setting.
+ *   - The value is the key that will be used from the new config file
+ *     (Can have in string for array).
+ */
+function os2web_meetings_update_entity_from_yml($module_name, $ymlFileName, $entityType, $id, array $setComponents) {
+  $yml = Yaml::parse(file_get_contents(drupal_get_path('module', $module_name) . '/config/install/' . $ymlFileName . '.yml'));
+
+  $entity = \Drupal::entityTypeManager()
+    ->getStorage($entityType)
+    ->load($id);
+  foreach ($setComponents as $key => $value) {
+    $parts = explode('.', $value);
+    if (count($parts) == 1) {
+      $entity->setComponent($key, $yml[$value]);
+    }
+    else {
+      $value = NestedArray::getValue($yml, $parts);
+      if (empty($value)) {
+        \Drupal::service('messenger')->addWarning('Component ' . $key . ' has empty configuration');
+        continue;
+      }
+      $entity->setComponent($key, $value);
+    }
+  }
+
+  $entity->save();
 }
