@@ -1,0 +1,152 @@
+<?php
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\os2web_meetings\Entity\BulletPoint;
+use Drupal\os2web_meetings\Entity\BulletPointAttachment;
+use Drupal\os2web_meetings\Entity\Meeting;
+use Drupal\search_api\Plugin\search_api\datasource\ContentEntity;
+
+/**
+ * @file
+ * Primary module hooks for os2web_meetings_search module.
+ */
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Updates placeholder.
+ */
+function os2web_meetings_search_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
+  switch ($form['#id']) {
+    case 'views-exposed-form-os2web-meetings-search-page-os2web-meeetings-search-page':
+      // Setting placeholder and adding class.
+      $form['sq']['#attributes']['placeholder'] = $form['#info']['filter-search_api_fulltext']['label'];
+      $form['sq']['#attributes']['class'][] = 'search-input__input';
+
+      // Cleaning the filter labels.
+      unset($form['#info']['filter-search_api_fulltext']['label']);
+
+      // Removing text value and adding class.
+      $form['actions']['submit']['#value'] = '';
+      $form['actions']['submit']['#attributes']['class'][] = 'search-input__button';
+
+      break;
+  }
+}
+
+
+/**
+ * Implements hook_search_api_solr_documents_alter();
+ */
+function os2web_meetings_search_search_api_solr_documents_alter(array &$documents, \Drupal\search_api\IndexInterface $index, array $items) {
+  /** @var \Solarium\QueryType\Update\Query\Document $document */
+  foreach ($documents as $document) {
+    $docFields = $document->getFields();
+    $itemId = $docFields['ss_search_api_id'];
+    /** @var \Drupal\search_api\Item\ItemInterface $item */
+    $item = $items[$itemId];
+
+    /** @var \Drupal\Core\Entity\Plugin\DataType\EntityAdapter $entityAdapter */
+    $entityAdapter = $item->getOriginalObject();
+    /** @var \Drupal\node\NodeInterface $node */
+    $node = $entityAdapter->getEntity();
+
+    $meetingNode = NULL;
+
+    if ($node->getType() == 'os2web_meetings_meeting') {
+      $meetingNode = $node;
+    } elseif ($node->getType() == 'os2web_meetings_bp') {
+      $bulletPoint = new BulletPoint($node);
+      $meetingNode = $bulletPoint->getMeeting();
+    } elseif ($node->getType() == 'os2web_meetings_bpa') {
+      $bpa = new BulletPointAttachment($node);
+      $meetingNode = $bpa->getMeeting();
+    }
+
+    if ($meetingNode) {
+      // Getting committee ID.
+      $committeeTid = (new Meeting($meetingNode))->getCommittee(FALSE);
+
+      // Adding committee ID to the index.
+      $document->setField('itm_os2web_m_committee', $committeeTid);
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_update().
+ *
+ * @see os2web_meetings_search_entity_changed().
+ */
+function os2web_meetings_search_node_update(EntityInterface $entity) {
+  os2web_meetings_search_entity_changed($entity);
+}
+
+/**
+ * Implements hook_entity_delete().
+ *
+ * @see os2web_meetings_search_entity_changed().
+ */
+function os2web_meetings_search_node_delete(EntityInterface $entity) {
+  os2web_meetings_search_entity_changed($entity);
+}
+
+/**
+ * Reacts on entity being updated or deleted.
+ *
+ * IF os2web_meetings_bp or os2web_meetings_bpa is updated or deleted, finds
+ * a corresponding meeting (and bullet point attachments) and marks it as
+ * reindex required.
+ *
+ * @see os2web_meeting__search_mark_entity_updated().
+ */
+function os2web_meetings_search_entity_changed(EntityInterface $entity) {
+  $meeting = NULL;
+  $bp = NULL;
+
+  if ($entity->getType() == 'os2web_meetings_bp') {
+    $os2webBp = new BulletPoint($entity);
+    $meeting = $os2webBp->getMeeting();
+  }
+  elseif ($entity->getType() == 'os2web_meetings_bpa') {
+    $os2webBpa = new BulletPointAttachment($entity);
+
+    $bp = $os2webBpa->getBulletPoint();
+    $meeting = $os2webBpa->getMeeting();
+  }
+
+  if (!empty($meeting)) {
+    os2web_meetings_search_mark_entity_updated($meeting);
+  }
+  if (!empty($bp)) {
+    os2web_meetings_search_mark_entity_updated($bp);
+  }
+}
+
+/**
+ * Updates the corresponding tracking table entries for each index that tracks
+ * this entity.
+ *
+ * @see search_api_entity_update().
+ */
+function os2web_meetings_search_mark_entity_updated(EntityInterface $entity) {
+  $entity_id = $entity->id();
+
+  $indexes = ContentEntity::getIndexesForEntity($entity);
+  if (!$indexes) {
+    return;
+  }
+
+  $datasource_id = 'entity:' . $entity->getEntityTypeId();
+  $combine_id = function ($langcode) use ($entity_id) {
+    return $entity_id . ':' . $langcode;
+  };
+  $updated_item_ids = $entity->getTranslationLanguages();
+  $updated_item_ids = array_map($combine_id, array_keys($updated_item_ids));
+  foreach ($indexes as $index) {
+    if ($updated_item_ids) {
+      $index->trackItemsUpdated($datasource_id, $updated_item_ids);
+    }
+  }
+}
