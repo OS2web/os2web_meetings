@@ -46,6 +46,31 @@ class Meeting extends Os2webNodeBase {
   }
 
   /**
+   * Returns related committee.
+   *
+   * @param bool $load
+   *   If the returned term shall be load. If FALSE, tid is returned.
+   *
+   * @return \Drupal\taxonomy\TermInterface|int|null
+   *   Department term, or Department tid.
+   *   NULL is nothing is found.
+   *
+   * @throws \Drupal\Core\TypedData\Exception\MissingDataException
+   */
+  public function getCommittee($load = TRUE) {
+    if ($fieldCommittee = $this->getEntity()->get('field_os2web_m_committee')->first()) {
+      if ($load) {
+        return $fieldCommittee->get('entity')->getTarget()->getValue();
+      }
+      else {
+        return $fieldCommittee->getValue()['target_id'];
+      }
+    }
+
+    return NULL;
+  }
+
+  /**
    * Returns related bullet points.
    *
    * @param bool $load
