@@ -110,6 +110,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     // very few modifications.
     // Always get UNIX paths, skipping . and .., key as filename, and follow
     // links.
+    
     $flags = \FilesystemIterator::UNIX_PATHS |
       \FilesystemIterator::SKIP_DOTS |
       \FilesystemIterator::KEY_AS_FILENAME |
@@ -144,7 +145,6 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
 
     // Get an iterator of our iterator...
     $iterator = new \RecursiveIteratorIterator($filter);
-
     // ...because we need to get the path and filename of each item...
     /** @var \SplFileInfo $fileinfo */
     $urls = [];
@@ -176,8 +176,9 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
    * {@inheritDoc}
    */
   public function prepareRow(Row $row) {
-    $agendaId = $row->getSourceProperty('agenda_id');
-
+     var_dump('here');
+  //  $agendaId = $this->convertAgendaIdToCanonical($source);
+  //  $row->setSourceProperty('agenda_id', $agendaId);
     // Removing meeting from a list of meeting scheduled to be unpublished.
     if ($this->unpublishMissingAgendas) {
       unset($this->unpublishScheduledMeetings[$agendaId]);
@@ -188,25 +189,27 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     if (!$result) {
       return $result;
     }
-
+   var_dump('here2');
     // TODO: meeting skipping, meeting updating (agenda->referat etc)
     // Check if the current meeting needs creating updating.
     if (!$row->getIdMap() || $row->needsUpdate() || $this->aboveHighwater($row) || $this->rowChanged($row)) {
       // Setting meeting source ID.
+     
       $row->setDestinationProperty('field_os2web_m_source', $this->getPluginId());
-
       $source = $row->getSource();
       $meetingDirectoryPath = $row->getSourceProperty('directory_path');
 
       // Process agenda access.
       $agendaAccessCanonical = $this->convertAgendaAccessToCanonical($source);
+      var_dump($agendaAccessCanonical);
       // Skipping closed agendas.
       if (!$this->importClosedAgenda && $agendaAccessCanonical != MeetingsDirectoryInterface::AGENDA_ACCESS_OPEN) {
         return FALSE;
       }
-
+ var_dump('here4');
       // Process committee.
       $committeeCanonical = $this->convertCommitteeToCanonical($source);
+   
       // Skip if committee is not whitelisted.
       if (!empty($this->committeesWhitelist)) {
         if (!in_array($committeeCanonical['id'], $this->committeesWhitelist)) {
@@ -215,7 +218,6 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       }
       $committeeTarget = $this->processCommittee($committeeCanonical);
       $row->setSourceProperty('committee_target', $committeeTarget);
-
       $meeting = Meeting::loadByEsdhId($agendaId);
 
       // Process agenda type.
@@ -244,7 +246,17 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       $bulletPointsCanonical = $this->convertBulletPointsToCanonical($source);
       $bulletPointTargets = $this->processBulletPoints($bulletPointsCanonical, $meetingDirectoryPath, $meeting);
       $row->setSourceProperty('bullet_points_targets', $bulletPointTargets);
+      
+      // Process participants
+      $participantsCanonical = $this->convertParticipantToCanonical($source);
+      if (!empty($participantsCanonical['participants'])){
+        $row->setSourceProperty('participants', implode(',', $participantsCanonical['participants']));
+      }
+      if (!empty($participantsCanonical['participants_canceled'])){
+        $row->setSourceProperty('cancel_participants', implode(',', $participantsCanonical['participants_canceled']));
+      }
     }
+    var_dump($row);
   }
 
   /**

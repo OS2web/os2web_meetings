@@ -22,6 +22,13 @@ interface MeetingsDirectoryInterface extends ImportAwareInterface {
    * @var string
    */
   const AGENDA_TYPE_REFERAT = 'Referat';
+  
+  /**
+   * Agenda type Kladde.
+   *
+   * @var string
+   */
+  const AGENDA_TYPE_KLADDE = 'Kladde';
 
   /**
    * Agenda access Open.
@@ -206,7 +213,7 @@ interface MeetingsDirectoryInterface extends ImportAwareInterface {
    *     ...
    *   ]
    */
-  public function convertAttachmentsToCanonical(array $source);
+  public function convertAttachmentsToCanonical(array $source, $access = TRUE);
 
   /**
    * Convert the enclosure raw data from ESDH into a canonical format.
@@ -229,5 +236,32 @@ interface MeetingsDirectoryInterface extends ImportAwareInterface {
    *   ]
    */
   public function convertEnclosuresToCanonical(array $source);
-
+  
+  /**
+   * Convert the agenda participants to canonical format.
+   *
+   * This method intended to be implemented by ESDH plugin.
+   *
+   * @param array $source
+   *   Raw array values from ESDH provider.
+   *
+   * @return string
+   *   Agenda type as string.
+   */
+  public function convertParticipantToCanonical(array $source);
+  
+  /**
+   * Convert the agenda id to canonical format.
+   *
+   * This method intended to be implemented by ESDH plugin.
+   *
+   * @param array $source
+   *   Raw array values from ESDH provider.
+   *
+   * @return string
+   *   Agenda type as string.
+   */
+  
+  public function convertAgendaIdToCanonical(array $source);
+  
 }

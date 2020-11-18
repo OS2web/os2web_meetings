@@ -121,6 +121,13 @@ class SettingsForm extends ConfigFormBase {
         ->get('replace_empty_paragraphs'),
     ];
 
+    $form['meetings_import_details']['banned_special_char'] = [
+      '#type' => 'textfield',
+      '#title' => t('Ikke standard XML tegn der skal fjernes ved import (CSV)'),
+      '#description' => t('Komma sepereret liste over ikke standard tegn der skal fjernes ved import.'),
+      '#default_value' => $this->config(SettingsForm::$configName)
+        ->get('banned_special_char'),
+    ];
     $form['meetings_import_details']['max_sequential_br'] = [
       '#type' => 'number',
       '#title' => t('Maximum allowed amount of sequential br-tags'),
