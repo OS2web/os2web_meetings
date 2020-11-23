@@ -176,9 +176,9 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
    * {@inheritDoc}
    */
   public function prepareRow(Row $row) {
-     var_dump('here');
-  //  $agendaId = $this->convertAgendaIdToCanonical($source);
-  //  $row->setSourceProperty('agenda_id', $agendaId);
+    $source = $row->getSource();
+    $agendaId = $this->convertAgendaIdToCanonical($source);
+    $row->setSourceProperty('agenda_id', $agendaId);
     // Removing meeting from a list of meeting scheduled to be unpublished.
     if ($this->unpublishMissingAgendas) {
       unset($this->unpublishScheduledMeetings[$agendaId]);
@@ -189,24 +189,21 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     if (!$result) {
       return $result;
     }
-   var_dump('here2');
     // TODO: meeting skipping, meeting updating (agenda->referat etc)
     // Check if the current meeting needs creating updating.
     if (!$row->getIdMap() || $row->needsUpdate() || $this->aboveHighwater($row) || $this->rowChanged($row)) {
       // Setting meeting source ID.
      
       $row->setDestinationProperty('field_os2web_m_source', $this->getPluginId());
-      $source = $row->getSource();
+      
       $meetingDirectoryPath = $row->getSourceProperty('directory_path');
 
       // Process agenda access.
       $agendaAccessCanonical = $this->convertAgendaAccessToCanonical($source);
-      var_dump($agendaAccessCanonical);
       // Skipping closed agendas.
       if (!$this->importClosedAgenda && $agendaAccessCanonical != MeetingsDirectoryInterface::AGENDA_ACCESS_OPEN) {
         return FALSE;
       }
- var_dump('here4');
       // Process committee.
       $committeeCanonical = $this->convertCommitteeToCanonical($source);
    
@@ -351,7 +348,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
   protected function processCommittee(array $committeeCanonical) {
     $id = $committeeCanonical['id'];
     $name = $committeeCanonical['name'];
-
+var_dump($id);
     /** @var \Drupal\os2web_meetings\Entity\Committee $committee */
     $committee = Committee::loadByEsdhId($id);
 
