@@ -236,7 +236,7 @@ display:
             group_items: {  }
           plugin_id: search_api_language
       sorts: {  }
-      title: 'OS2Web Meetings Search page'
+      title: 'Møde søgning'
       header:
         area:
           id: area
