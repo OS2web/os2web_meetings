@@ -15,6 +15,7 @@ use Drupal\os2web_meetings\Entity\Meeting;
 use Drupal\os2web_meetings\Form\SettingsForm;
 use Drupal\os2web_meetings\MeetingsDirectoryInterface;
 use Drupal\taxonomy\Entity\Term;
+use Drupal\file\Entity\File;
 
 /**
  * Source plugin for retrieving data via URLs.
@@ -709,7 +710,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       $name = $basename;
       $ext = '';
     }
-
+    $original_name = $name;
     // If the desired title is provided, use it. Otherwise take the original
     // title and concat '_0'.
     if ($title) {
@@ -725,11 +726,25 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     $copyUri = $dirname . $separator . $name . $ext;
 
     $managedFile = FALSE;
+    $settingFormConfig = \Drupal::config(SettingsForm::$configName);
+    $createFilesCopy = $settingFormConfig->get('create_files_copy');
     try {
+      if ($createFilesCopy) {
       $unmanagedFilePath = $file_system->copy($uri, $copyUri, FileSystemInterface::EXISTS_REPLACE);
 
       $data = file_get_contents($unmanagedFilePath);
       $managedFile = file_save_data($data, $unmanagedFilePath, FileSystemInterface::EXISTS_REPLACE);
+      }
+      else {
+        $current_user = \Drupal::currentUser();
+        $managedFile = File::create([
+          'uid' => $current_user->id(),
+          'filename' => $original_name,
+          'uri' => $uri,
+          'status' => 1,
+        ]);
+        $managedFile->save();
+      }
     }
     catch (\Exception $e) {
       \Drupal::logger('os2web_meeting')->warning($e->getMessage());

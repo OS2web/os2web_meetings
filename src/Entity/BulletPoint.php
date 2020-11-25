@@ -37,6 +37,30 @@ class BulletPoint extends Os2webNodeBase {
   }
 
   /**
+   * Returns related meeting.
+   *
+   * @param bool $load
+   *   If the returned node shall be load. If FALSE, nid is returned.
+   *
+   * @return \Drupal\node\NodeInterface|int|null
+   *   Meeting node, or Meeting nid.
+   *   NULL is nothing is found.
+   */
+  public function getMeeting($load = TRUE) {
+    $query = \Drupal::entityQuery('node')
+      ->condition('type', 'os2web_meetings_meeting')
+      ->condition('field_os2web_m_bps', $this->getEntity()->id());
+
+    $nids = $query->execute();
+    if (!empty($nids)) {
+      $nid = reset($nids);
+      return ($load) ? Node::load($nid) : $nid;
+    }
+
+    return NULL;
+  }
+
+  /**
    * Returns related enclosures.
    *
    * @param bool $load
