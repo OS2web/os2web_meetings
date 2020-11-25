@@ -110,7 +110,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     // very few modifications.
     // Always get UNIX paths, skipping . and .., key as filename, and follow
     // links.
-    
+
     $flags = \FilesystemIterator::UNIX_PATHS |
       \FilesystemIterator::SKIP_DOTS |
       \FilesystemIterator::KEY_AS_FILENAME |
@@ -193,9 +193,9 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     // Check if the current meeting needs creating updating.
     if (!$row->getIdMap() || $row->needsUpdate() || $this->aboveHighwater($row) || $this->rowChanged($row)) {
       // Setting meeting source ID.
-     
+
       $row->setDestinationProperty('field_os2web_m_source', $this->getPluginId());
-      
+
       $meetingDirectoryPath = $row->getSourceProperty('directory_path');
 
       // Process agenda access.
@@ -206,7 +206,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       }
       // Process committee.
       $committeeCanonical = $this->convertCommitteeToCanonical($source);
-   
+
       // Skip if committee is not whitelisted.
       if (!empty($this->committeesWhitelist)) {
         if (!in_array($committeeCanonical['id'], $this->committeesWhitelist)) {
@@ -236,14 +236,16 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
 
       // Process location.
       $locationCanonical = $this->convertLocationToCanonical($source);
-      $locationTarget = $this->processLocation($locationCanonical);
-      $row->setSourceProperty('location_target', $locationTarget);
+      if (!empty($locationCanonical)) {
+        $locationTarget = $this->processLocation($locationCanonical);
+        $row->setSourceProperty('location_target', $locationTarget);
+      }
 
       // Process bullet points.
       $bulletPointsCanonical = $this->convertBulletPointsToCanonical($source);
       $bulletPointTargets = $this->processBulletPoints($bulletPointsCanonical, $meetingDirectoryPath, $meeting);
       $row->setSourceProperty('bullet_points_targets', $bulletPointTargets);
-      
+
       // Process participants
       $participantsCanonical = $this->convertParticipantToCanonical($source);
       if (!empty($participantsCanonical['participants'])){
@@ -253,7 +255,6 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
         $row->setSourceProperty('cancel_participants', implode(',', $participantsCanonical['participants_canceled']));
       }
     }
-    var_dump($row);
   }
 
   /**
@@ -348,7 +349,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
   protected function processCommittee(array $committeeCanonical) {
     $id = $committeeCanonical['id'];
     $name = $committeeCanonical['name'];
-var_dump($id);
+
     /** @var \Drupal\os2web_meetings\Entity\Committee $committee */
     $committee = Committee::loadByEsdhId($id);
 
