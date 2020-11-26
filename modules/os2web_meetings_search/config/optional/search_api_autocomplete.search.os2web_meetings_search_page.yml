@@ -1,0 +1,24 @@
+langcode: da
+status: true
+dependencies:
+  config:
+    - search_api.index.os2web_meetings_search
+    - views.view.os2web_meetings_search_page
+  module:
+    - views
+    - search_api_autocomplete
+id: os2web_meetings_search_page
+label: 'OS2Web Meetings Search page'
+index_id: os2web_meetings_search
+suggester_settings:
+  live_results:
+    fields: {  }
+    view_modes: {  }
+suggester_weights: {  }
+suggester_limits: {  }
+search_settings:
+  'views:os2web_meetings_search_page':
+    displays:
+      default: true
+      selected: {  }
+options: {  }

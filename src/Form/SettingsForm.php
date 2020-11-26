@@ -96,6 +96,14 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => $this->config(SettingsForm::$configName)
         ->get('unpublish_missing_agendas'),
     ];
+    $form['meetings_import_details']['create_files_copy'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Create copy of attachments files during import'),
+      '#description' => t('This decides if file copy should be created when enclosures imported'),
+      '#default_value' => ($this->config(SettingsForm::$configName)
+        ->get('create_files_copy') !== null) ? $this->config(SettingsForm::$configName)
+        ->get('create_files_copy') : TRUE,
+    ];
 
     $form['meetings_import_details']['process_enclosures_as_attachments'] = [
       '#type' => 'checkbox',
