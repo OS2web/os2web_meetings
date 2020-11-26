@@ -26,7 +26,7 @@ function os2web_meetings_update_8001() {
 }
 
 /**
- * Updates Indholdside.
+ * Updates Meeting node. Added Participants fields.
  */
 function os2web_meetings_update_8002() {
   $path = drupal_get_path('module', 'os2web_meetings');

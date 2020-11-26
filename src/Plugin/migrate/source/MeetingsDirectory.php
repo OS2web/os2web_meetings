@@ -162,13 +162,15 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     $this->importClosedAgenda = $settingFormConfig->get('import_closed_agenda');
     $this->closedBulletPointTitlePrefix = $settingFormConfig->get('closed_bp_title_prefix');
     $this->closedBulletPointBodyText = $settingFormConfig->get('closed_bp_body_text');
+    $this->closedBulletPointsTitles = !empty($settingFormConfig->get('imported_closed_bps_titles')) ? explode(',', $settingFormConfig->get('imported_closed_bps_titles')) : array();
     $this->unpublishMissingAgendas = $settingFormConfig->get('unpublish_missing_agendas');
     $this->processEnclosuresAsAttachments = $settingFormConfig->get('process_enclosures_as_attachments');
     $this->clearHtmlTagsList = str_getcsv($settingFormConfig->get('clear_html_tags_list'));
     $this->replaceMultipleNbsp = $settingFormConfig->get('replace_multiple_nbsp');
     $this->replaceEmptyParagraphs = $settingFormConfig->get('replace_empty_paragraphs');
     $this->maxSequentialBr = $settingFormConfig->get('max_sequential_br') ?? 1;
-
+    $this->closedBulletPointsTitles = array_map('trim', $this->closedBulletPointsTitles);
+    $this->closedBulletPointsTitles = array_map('strtolower', $this->closedBulletPointsTitles);
     parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
   }
 
@@ -489,14 +491,13 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
 
         // Processing attachments.
         $os2webBp = new BulletPoint($bp);
-        $bpa_targets = $this->processAttachments($attachments, $directoryPath, $os2webBp);
+        $bpa_targets = $this->processAttachments($attachments, $directoryPath, $os2webBp, $access);
       }
       else {
         $title = $bp->getTitle();
         if ($titlePrefix = $this->closedBulletPointTitlePrefix) {
           $bp->setTitle($titlePrefix . ' ' . $title);
         }
-
         // Set closed bullet point text.
         $bp->set('body', $this->closedBulletPointBodyText);
       }
@@ -608,10 +609,12 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
    *
    * @see \Drupal\os2web_meetings\Plugin\migrate\source\MeetingsDirectory::convertAttachmentsToCanonical()
    */
-  protected function processAttachments(array $attachments, $directoryPath, BulletPoint $bulletPoint) {
+  protected function processAttachments(array $attachments, $directoryPath, BulletPoint $bulletPoint, $bpAccess = TRUE) {
     $bpaTargets = [];
-
     foreach ($attachments as $attachment) {
+      if (!$bpAccess && !empty($this->closedBulletPointsTitles) && !in_array(strtolower($attachment['title']), $this->closedBulletPointsTitles)) {
+        continue;
+      }
       $id = $attachment['id'];
       $title = $attachment['title'];
       $body = $this->cleanHtml($attachment['body']);
