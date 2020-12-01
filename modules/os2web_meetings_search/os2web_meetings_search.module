@@ -2,6 +2,7 @@
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\NodeInterface;
 use Drupal\os2web_meetings\Entity\BulletPoint;
 use Drupal\os2web_meetings\Entity\BulletPointAttachment;
 use Drupal\os2web_meetings\Entity\Meeting;
@@ -49,6 +50,13 @@ function os2web_meetings_search_search_api_solr_documents_alter(array &$document
 
     /** @var \Drupal\Core\Entity\Plugin\DataType\EntityAdapter $entityAdapter */
     $entityAdapter = $item->getOriginalObject();
+    $entity = $entityAdapter->getEntity();
+
+    // Ignoring entities that are NOT nodes.
+    if (!$entity instanceof NodeInterface) {
+      continue;
+    }
+
     /** @var \Drupal\node\NodeInterface $node */
     $node = $entityAdapter->getEntity();
 

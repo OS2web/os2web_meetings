@@ -34,7 +34,7 @@ class RelatedSearchPageLink extends BlockBase implements BlockPluginInterface {
 
       if ($view_id == $content_view_id) {
         $url = Url::fromRoute("view.$meetings_view_id.os2web_meeetings_search_page")->setRouteParameter('sq', $searchQuery);
-        $urlText = 'møder';
+        $urlText = 'dagsordner og referater';
       }
       elseif ($view_id == $meetings_view_id) {
         $url = Url::fromRoute("view.$content_view_id.os2web_search_page")->setRouteParameter('sq', $searchQuery);
