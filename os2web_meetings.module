@@ -105,9 +105,41 @@ function os2web_meetings_views_pre_view(ViewExecutable $view) {
 function os2web_meetings_preprocess_node(&$variables) {
   if ($variables['node']->getType() == 'os2web_meetings_meeting') {
     /** @var \Drupal\Core\Datetime\DrupalDateTime $start_date */
+    $settingFormConfig = \Drupal::config(SettingsForm::$configName);
+    $showClosedAgendasSeparately = $settingFormConfig->get('show_closed_agendas_separately');
+
     if ($start_date = $variables['node']->field_os2web_m_start_date->date) {
       $month_value = $start_date->format('m');
       $variables['attributes']['class'][] = "month--$month_value";
+    }
+    if ($showClosedAgendasSeparately) {
+      $count = 0;
+      if (isset($variables['content']['field_os2web_m_bps']['#items'])) {
+        $items = $variables['content']['field_os2web_m_bps']['#items'];
+        $count = isset($items) ? $items->count() : 0;
+      }
+      $openBp = [];
+      $closedlBp = [];
+      for ($i = 0; $i < $count; $i++) {
+        // Saving BPA render and removing it from a list.
+        $bp_render = $variables['content']['field_os2web_m_bps'][$i];
+        unset($variables['content']['field_os2web_m_bps'][$i]);
+        /** @var \Drupal\node\NodeInterface $bpa */
+        $bp = $bp_render['#node'];
+        $isClosed = array_pop($bp->get("field_os2web_m_bp_closed")->getValue());
+
+        // If that a special BPA (Resume or Desicison) add it to special meta
+        // field, otherwise save it as normal BPA.
+        if ($isClosed['value'] == '1') {
+          $closedBp[] = $bp_render;
+        }
+        else {
+          $openBp[] = $bp_render;
+        }
+      }
+      // Add normal BPA back to the render array.
+      $variables['content']['field_os2web_m_bps']['open'] = array_merge($variables['content']['field_os2web_m_bps'], $openBp);
+      $variables['content']['field_os2web_m_bps']['closed'] = array_merge($variables['content']['field_os2web_m_bps'], $closedBp);
     }
   }
   elseif ($variables['node']->getType() == 'os2web_meetings_bp' && $variables['view_mode'] == 'teaser') {

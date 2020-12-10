@@ -445,6 +445,8 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
    */
   protected function processBulletPoints(array $bulletPoints, $directoryPath, $meeting = NULL) {
     $bulletPointsTargets = [];
+    $settingFormConfig = \Drupal::config(SettingsForm::$configName);
+    $textBeforeBpaNumber = $settingFormConfig->get('text_before_bpa_number');
     foreach ($bulletPoints as $bulletPoint) {
       $id = $bulletPoint['id'];
       $number = $bulletPoint['number'];
@@ -506,7 +508,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       // Setting fields.
       if (isset($number)) {
         $title = $bp->getTitle();
-        $bp->setTitle("$number. $title");
+        $bp->setTitle("$textBeforeBpaNumber $number. $title");
       }
       $bp->set('field_os2web_m_bp_enclosures', $enclosure_targets);
       $bp->set('field_os2web_m_bp_bpas', $bpa_targets);
