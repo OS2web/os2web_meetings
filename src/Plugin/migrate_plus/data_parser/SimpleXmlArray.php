@@ -4,6 +4,7 @@ namespace Drupal\os2web_meetings\Plugin\migrate_plus\data_parser;
 
 use Drupal\migrate\MigrateException;
 use Drupal\migrate_plus\Plugin\migrate_plus\data_parser\SimpleXml;
+use Drupal\os2web_meetings\Form\SettingsForm;
 
 /**
  * Extension of contrib SimpleXml.
@@ -48,8 +49,13 @@ class SimpleXmlArray extends SimpleXml {
     // positives in our error check below. We are only concerned with errors
     // that occur from attempting to load the XML string into an object here.
     libxml_clear_errors();
-
+    $settingFormConfig = \Drupal::config(SettingsForm::$configName);
+    $bannedSpecialChar = $settingFormConfig->get('banned_special_char');
+    
     $xml_data = $this->getDataFetcherPlugin()->getResponseContent($url);
+    if (!empty($bannedSpecialChar)) {
+      $xml_data = str_replace(explode(',', $bannedSpecialChar), '', $xml_data);
+    }
     $xml = simplexml_load_string(trim($xml_data), 'SimpleXMLElement', LIBXML_NOCDATA);
     foreach (libxml_get_errors() as $error) {
       $error_string = self::parseLibXmlError($error);

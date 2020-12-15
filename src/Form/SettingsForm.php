@@ -56,6 +56,18 @@ class SettingsForm extends ConfigFormBase {
         ->get('closed_bp_title_prefix'),
     ];
 
+    $form['meetings_import_details']['imported_closed_bps_titles'] = [
+      '#type' => 'textfield',
+      '#title' => t('Bullet point attachments titles, whose will be imported in closed bullet point'),
+      '#description' => t('Comma-separeted list of bullet point attachments titles, whose will be imported in closed bullet point. For example "indstilling,beslutning"'),
+      '#default_value' => $this->config(SettingsForm::$configName)
+        ->get('imported_closed_bps_titles'),
+      '#states' => [
+        'visible' => [
+          ':input[name="import_closed_agenda"]' => ['checked' => TRUE],
+        ],
+      ],
+    ];
     $form['meetings_import_details']['closed_bp_body_text'] = [
       '#type' => 'textarea',
       '#title' => t('Text for closed bullet point'),
@@ -129,6 +141,13 @@ class SettingsForm extends ConfigFormBase {
         ->get('replace_empty_paragraphs'),
     ];
 
+    $form['meetings_import_details']['banned_special_char'] = [
+      '#type' => 'textfield',
+      '#title' => t('Ikke standard XML tegn der skal fjernes ved import (CSV)'),
+      '#description' => t('Komma sepereret liste over ikke standard tegn der skal fjernes ved import.'),
+      '#default_value' => $this->config(SettingsForm::$configName)
+        ->get('banned_special_char'),
+    ];
     $form['meetings_import_details']['max_sequential_br'] = [
       '#type' => 'number',
       '#title' => t('Maximum allowed amount of sequential br-tags'),
@@ -157,12 +176,25 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => $this->config(SettingsForm::$configName)
         ->get('decision_bpa_title'),
     ];
+    $form['meetings_view_details']['text_before_bpa_number'] = [
+      '#type' => 'textfield',
+      '#title' => t('Add text before bullet point number'),
+      '#description' => t('This text will be added before bullet point number'),
+      '#default_value' => $this->config(SettingsForm::$configName)
+        ->get('text_before_bpa_number'),
+    ];
     $form['meetings_view_details']['enclosures_max_title_length'] = [
       '#type' => 'number',
       '#title' => t('Maximum length for BP enclosures title'),
       '#description' => t('If enclosure lenght if above the limit, it will be cut and ... will be added.'),
       '#default_value' => $this->config(SettingsForm::$configName)
         ->get('enclosures_max_title_length'),
+    ];
+    $form['meetings_view_details']['show_closed_agendas_separately'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Show closed agendas separately'),
+      '#default_value' => $this->config(SettingsForm::$configName)
+         ->get('show_closed_agendas_separately'),
     ];
 
     return parent::buildForm($form, $form_state);

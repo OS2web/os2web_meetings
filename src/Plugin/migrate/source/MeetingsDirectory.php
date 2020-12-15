@@ -111,6 +111,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     // very few modifications.
     // Always get UNIX paths, skipping . and .., key as filename, and follow
     // links.
+
     $flags = \FilesystemIterator::UNIX_PATHS |
       \FilesystemIterator::SKIP_DOTS |
       \FilesystemIterator::KEY_AS_FILENAME |
@@ -145,7 +146,6 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
 
     // Get an iterator of our iterator...
     $iterator = new \RecursiveIteratorIterator($filter);
-
     // ...because we need to get the path and filename of each item...
     /** @var \SplFileInfo $fileinfo */
     $urls = [];
@@ -163,13 +163,15 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     $this->importClosedAgenda = $settingFormConfig->get('import_closed_agenda');
     $this->closedBulletPointTitlePrefix = $settingFormConfig->get('closed_bp_title_prefix');
     $this->closedBulletPointBodyText = $settingFormConfig->get('closed_bp_body_text');
+    $this->closedBulletPointsTitles = !empty($settingFormConfig->get('imported_closed_bps_titles')) ? explode(',', $settingFormConfig->get('imported_closed_bps_titles')) : array();
     $this->unpublishMissingAgendas = $settingFormConfig->get('unpublish_missing_agendas');
     $this->processEnclosuresAsAttachments = $settingFormConfig->get('process_enclosures_as_attachments');
     $this->clearHtmlTagsList = str_getcsv($settingFormConfig->get('clear_html_tags_list'));
     $this->replaceMultipleNbsp = $settingFormConfig->get('replace_multiple_nbsp');
     $this->replaceEmptyParagraphs = $settingFormConfig->get('replace_empty_paragraphs');
     $this->maxSequentialBr = $settingFormConfig->get('max_sequential_br') ?? 1;
-
+    $this->closedBulletPointsTitles = array_map('trim', $this->closedBulletPointsTitles);
+    $this->closedBulletPointsTitles = array_map('strtolower', $this->closedBulletPointsTitles);
     parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
   }
 
@@ -177,8 +179,9 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
    * {@inheritDoc}
    */
   public function prepareRow(Row $row) {
-    $agendaId = $row->getSourceProperty('agenda_id');
-
+    $source = $row->getSource();
+    $agendaId = $this->convertAgendaIdToCanonical($source);
+    $row->setSourceProperty('agenda_id', $agendaId);
     // Removing meeting from a list of meeting scheduled to be unpublished.
     if ($this->unpublishMissingAgendas) {
       unset($this->unpublishScheduledMeetings[$agendaId]);
@@ -189,14 +192,13 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     if (!$result) {
       return $result;
     }
-
     // TODO: meeting skipping, meeting updating (agenda->referat etc)
     // Check if the current meeting needs creating updating.
     if (!$row->getIdMap() || $row->needsUpdate() || $this->aboveHighwater($row) || $this->rowChanged($row)) {
       // Setting meeting source ID.
+
       $row->setDestinationProperty('field_os2web_m_source', $this->getPluginId());
 
-      $source = $row->getSource();
       $meetingDirectoryPath = $row->getSourceProperty('directory_path');
 
       // Process agenda access.
@@ -205,9 +207,9 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       if (!$this->importClosedAgenda && $agendaAccessCanonical != MeetingsDirectoryInterface::AGENDA_ACCESS_OPEN) {
         return FALSE;
       }
-
       // Process committee.
       $committeeCanonical = $this->convertCommitteeToCanonical($source);
+
       // Skip if committee is not whitelisted.
       if (!empty($this->committeesWhitelist)) {
         if (!in_array($committeeCanonical['id'], $this->committeesWhitelist)) {
@@ -216,7 +218,6 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       }
       $committeeTarget = $this->processCommittee($committeeCanonical);
       $row->setSourceProperty('committee_target', $committeeTarget);
-
       $meeting = Meeting::loadByEsdhId($agendaId);
 
       // Process agenda type.
@@ -238,13 +239,24 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
 
       // Process location.
       $locationCanonical = $this->convertLocationToCanonical($source);
-      $locationTarget = $this->processLocation($locationCanonical);
-      $row->setSourceProperty('location_target', $locationTarget);
+      if (!empty($locationCanonical)) {
+        $locationTarget = $this->processLocation($locationCanonical);
+        $row->setSourceProperty('location_target', $locationTarget);
+      }
 
       // Process bullet points.
       $bulletPointsCanonical = $this->convertBulletPointsToCanonical($source);
       $bulletPointTargets = $this->processBulletPoints($bulletPointsCanonical, $meetingDirectoryPath, $meeting);
       $row->setSourceProperty('bullet_points_targets', $bulletPointTargets);
+
+      // Process participants
+      $participantsCanonical = $this->convertParticipantToCanonical($source);
+      if (!empty($participantsCanonical['participants'])){
+        $row->setSourceProperty('participants', implode(',', $participantsCanonical['participants']));
+      }
+      if (!empty($participantsCanonical['participants_canceled'])){
+        $row->setSourceProperty('cancel_participants', implode(',', $participantsCanonical['participants_canceled']));
+      }
     }
   }
 
@@ -433,6 +445,8 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
    */
   protected function processBulletPoints(array $bulletPoints, $directoryPath, $meeting = NULL) {
     $bulletPointsTargets = [];
+    $settingFormConfig = \Drupal::config(SettingsForm::$configName);
+    $textBeforeBpaNumber = $settingFormConfig->get('text_before_bpa_number');
     foreach ($bulletPoints as $bulletPoint) {
       $id = $bulletPoint['id'];
       $number = $bulletPoint['number'];
@@ -480,14 +494,13 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
 
         // Processing attachments.
         $os2webBp = new BulletPoint($bp);
-        $bpa_targets = $this->processAttachments($attachments, $directoryPath, $os2webBp);
+        $bpa_targets = $this->processAttachments($attachments, $directoryPath, $os2webBp, $access);
       }
       else {
         $title = $bp->getTitle();
         if ($titlePrefix = $this->closedBulletPointTitlePrefix) {
           $bp->setTitle($titlePrefix . ' ' . $title);
         }
-
         // Set closed bullet point text.
         $bp->set('body', $this->closedBulletPointBodyText);
       }
@@ -495,7 +508,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       // Setting fields.
       if (isset($number)) {
         $title = $bp->getTitle();
-        $bp->setTitle("$number. $title");
+        $bp->setTitle("$textBeforeBpaNumber $number. $title");
       }
       $bp->set('field_os2web_m_bp_enclosures', $enclosure_targets);
       $bp->set('field_os2web_m_bp_bpas', $bpa_targets);
@@ -599,10 +612,12 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
    *
    * @see \Drupal\os2web_meetings\Plugin\migrate\source\MeetingsDirectory::convertAttachmentsToCanonical()
    */
-  protected function processAttachments(array $attachments, $directoryPath, BulletPoint $bulletPoint) {
+  protected function processAttachments(array $attachments, $directoryPath, BulletPoint $bulletPoint, $bpAccess = TRUE) {
     $bpaTargets = [];
-
     foreach ($attachments as $attachment) {
+      if (!$bpAccess && !empty($this->closedBulletPointsTitles) && !in_array(strtolower($attachment['title']), $this->closedBulletPointsTitles)) {
+        continue;
+      }
       $id = $attachment['id'];
       $title = $attachment['title'];
       $body = $this->cleanHtml($attachment['body']);

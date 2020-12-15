@@ -24,3 +24,31 @@ function os2web_meetings_read_in_new_config($config_name) {
 function os2web_meetings_update_8001() {
   os2web_meetings_read_in_new_config('field.field.node.os2web_meetings_meeting.field_os2web_m_start_date');
 }
+
+/**
+ * Updates Meeting node. Added Participants fields.
+ */
+function os2web_meetings_update_8002() {
+  $path = drupal_get_path('module', 'os2web_meetings');
+  // Create field storage.
+  $field_media_image_storage_yml = Yaml::parse(file_get_contents($path . '/config/optional/field.storage.node.field_os2web_m_partic.yml'));
+  if (!FieldStorageConfig::loadByName($field_media_image_storage_yml['entity_type'], $field_media_image_storage_yml['field_name'])) {
+    FieldStorageConfig::create($field_media_image_storage_yml)->save();
+  }
+  // Create field instance.
+  $field_media_image_yml = Yaml::parse(file_get_contents($path . '/config/optional/field.field.node.os2web_meetings_meeting.field_os2web_m_partic.yml'));
+  if (!FieldConfig::loadByName($field_media_image_yml['entity_type'], $field_media_image_yml['bundle'], $field_media_image_yml['field_name'])) {
+    FieldConfig::create($field_media_image_yml)->save();
+  }
+   // Create field storage.
+  $field_media_image_storage_yml = Yaml::parse(file_get_contents($path . '/config/optional/ield.storage.node.field_os2web_m_partic_cancel.yml'));
+  if (!FieldStorageConfig::loadByName($field_media_image_storage_yml['entity_type'], $field_media_image_storage_yml['field_name'])) {
+    FieldStorageConfig::create($field_media_image_storage_yml)->save();
+  }
+  // Create field instance.
+  $field_media_image_yml = Yaml::parse(file_get_contents($path . '/config/optional/field.field.node.os2web_meetings_meeting.field_os2web_m_partic_cancel.yml'));
+  if (!FieldConfig::loadByName($field_media_image_yml['entity_type'], $field_media_image_yml['bundle'], $field_media_image_yml['field_name'])) {
+    FieldConfig::create($field_media_image_yml)->save();
+  }
+
+}
