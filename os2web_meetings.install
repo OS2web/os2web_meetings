@@ -52,3 +52,13 @@ function os2web_meetings_update_8002() {
   }
 
 }
+
+/**
+ * Add meeting document view.
+ */
+function os2web_meetings_update_8003() {
+  $path = drupal_get_path('module', 'os2web_meetings');
+  /** @var \Drupal\Core\Config\StorageInterface $active_storage */
+  $active_storage = \Drupal::service('config.storage');
+  $active_storage->write('views.view.os2web_meetings_meeting_document', Yaml::parse(file_get_contents($path . '/config/optional/views.view.os2web_meetings_meeting_document.yml')));
+}
