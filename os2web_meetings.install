@@ -5,8 +5,8 @@
  * Install, uninstall and update hooks for page builder module.
  */
 
+use Drupal\Core\Config\FileStorage;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\taxonomy\Entity\Vocabulary;
 use Symfony\Component\Yaml\Yaml;
 use Drupal\field\Entity\FieldConfig;
 
@@ -41,7 +41,7 @@ function os2web_meetings_update_8002() {
     FieldConfig::create($field_media_image_yml)->save();
   }
    // Create field storage.
-  $field_media_image_storage_yml = Yaml::parse(file_get_contents($path . '/config/optional/ield.storage.node.field_os2web_m_partic_cancel.yml'));
+  $field_media_image_storage_yml = Yaml::parse(file_get_contents($path . '/config/optional/field.storage.node.field_os2web_m_partic_cancel.yml'));
   if (!FieldStorageConfig::loadByName($field_media_image_storage_yml['entity_type'], $field_media_image_storage_yml['field_name'])) {
     FieldStorageConfig::create($field_media_image_storage_yml)->save();
   }
@@ -61,4 +61,67 @@ function os2web_meetings_update_8003() {
   /** @var \Drupal\Core\Config\StorageInterface $active_storage */
   $active_storage = \Drupal::service('config.storage');
   $active_storage->write('views.view.os2web_meetings_meeting_document', Yaml::parse(file_get_contents($path . '/config/optional/views.view.os2web_meetings_meeting_document.yml')));
+}
+
+/**
+ * Updating paragraph os2web_meetings_search.
+ */
+function os2web_meetings_update_8004() {
+  $path = drupal_get_path('module', 'os2web_meetings');
+  /** @var \Drupal\Core\Config\StorageInterface $active_storage */
+  $active_storage = \Drupal::service('config.storage');
+
+  // Updating view.
+  $active_storage->write('views.view.os2web_meetings_search', Yaml::parse(file_get_contents($path . '/config/optional/views.view.os2web_meetings_search.yml')));
+
+  $module_handler = \Drupal::moduleHandler();
+  $config_storage = new FileStorage($module_handler->getModule('os2web_meetings')->getPath() . '/config/optional');
+
+  // Create field storage and field storage.
+  foreach (['field.storage.paragraph.field_os2web_meetings_sp_view', 'field.field.paragraph.os2web_meetings_search.field_os2web_meetings_sp_view'] as $config_name) {
+    $config_record = $config_storage->read($config_name);
+
+    $entity_type = \Drupal::service('config.manager')->getEntityTypeIdByName($config_name);
+    /** @var \Drupal\Core\Config\Entity\ConfigEntityStorageInterface $storage */
+    $storage = \Drupal::entityTypeManager()->getStorage($entity_type);
+    $entity = $storage->createFromStorageRecord($config_record);
+    $entity->save();
+  }
+
+  // Updating view and form displays.
+  $active_storage->write('core.entity_view_display.paragraph.os2web_meetings_search.default', Yaml::parse(file_get_contents($path . '/config/optional/core.entity_view_display.paragraph.os2web_meetings_search.default.yml')));
+  $active_storage->write('core.entity_form_display.paragraph.os2web_meetings_search.default', Yaml::parse(file_get_contents($path . '/config/optional/core.entity_form_display.paragraph.os2web_meetings_search.default.yml')));
+}
+
+/**
+ * Creating paragraph os2web_meetings.
+ */
+function os2web_meetings_update_8005() {
+  $path = drupal_get_path('module', 'os2web_meetings');
+  /** @var \Drupal\Core\Config\StorageInterface $active_storage */
+  $active_storage = \Drupal::service('config.storage');
+
+  //Creating paragraph.
+  $active_storage->write('paragraphs.paragraphs_type.os2web_meetings', Yaml::parse(file_get_contents($path . '/config/optional/paragraphs.paragraphs_type.os2web_meetings.yml')));
+
+  // Updating view.
+  $active_storage->write('views.view.os2web_meetings', Yaml::parse(file_get_contents($path . '/config/optional/views.view.os2web_meetings.yml')));
+
+  $module_handler = \Drupal::moduleHandler();
+  $config_storage = new FileStorage($module_handler->getModule('os2web_meetings')->getPath() . '/config/optional');
+
+  // Create field storage and field storage.
+  foreach (['field.storage.paragraph.field_os2web_meetings_par_view', 'field.field.paragraph.os2web_meetings.field_os2web_meetings_par_view'] as $config_name) {
+    $config_record = $config_storage->read($config_name);
+
+    $entity_type = \Drupal::service('config.manager')->getEntityTypeIdByName($config_name);
+    /** @var \Drupal\Core\Config\Entity\ConfigEntityStorageInterface $storage */
+    $storage = \Drupal::entityTypeManager()->getStorage($entity_type);
+    $entity = $storage->createFromStorageRecord($config_record);
+    $entity->save();
+  }
+
+  // Updating view and form displays.
+  $active_storage->write('core.entity_view_display.paragraph.os2web_meetings.default', Yaml::parse(file_get_contents($path . '/config/optional/core.entity_view_display.paragraph.os2web_meetings.default.yml')));
+  $active_storage->write('core.entity_form_display.paragraph.os2web_meetings.default', Yaml::parse(file_get_contents($path . '/config/optional/core.entity_form_display.paragraph.os2web_meetings.default.yml')));
 }

@@ -57,7 +57,7 @@ display:
           text_input_required_format: wysiwyg_tekst
           bef:
             general:
-              autosubmit: true
+              autosubmit: false
               autosubmit_exclude_textfield: false
               autosubmit_textfield_delay: 500
               autosubmit_hide: true
@@ -66,18 +66,19 @@ display:
               secondary_label: 'Advanced options'
               secondary_open: false
             filter:
-              field_os2web_m_committee_target_id:
-                plugin_id: default
+              field_os2web_m_start_date_value_1:
+                plugin_id: bef_datepicker
                 advanced:
-                  sort_options: false
-                  rewrite:
-                    filter_rewrite_values: ''
                   collapsible: false
                   is_secondary: false
               field_os2web_m_start_date_value:
+                plugin_id: bef_datepicker
+                advanced:
+                  collapsible: false
+                  is_secondary: false
+              field_os2web_m_committee_target_id:
                 plugin_id: default
                 advanced:
-                  placeholder_text: ''
                   rewrite:
                     filter_rewrite_values: ''
                   collapsible: false
@@ -353,13 +354,243 @@ display:
         - 'user.node_grants:view'
         - user.permissions
       tags: {  }
-  os2web_meetings_embed_search_simple:
+  os2web_meetings_embed_search_from_to_dates:
     display_plugin: embed
-    id: os2web_meetings_embed_search_simple
-    display_title: Embed
+    id: os2web_meetings_embed_search_from_to_dates
+    display_title: 'Embed (from and to dates)'
     position: 1
     display_options:
       display_extenders: {  }
+      filters:
+        status:
+          value: '1'
+          table: node_field_data
+          field: status
+          plugin_id: boolean
+          entity_type: node
+          entity_field: status
+          id: status
+          expose:
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+          group: 1
+        type:
+          id: type
+          table: node_field_data
+          field: type
+          relationship: none
+          group_type: group
+          admin_label: ''
+          operator: in
+          value:
+            os2web_meetings_meeting: os2web_meetings_meeting
+          group: 1
+          exposed: false
+          expose:
+            operator_id: ''
+            label: ''
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: ''
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          entity_type: node
+          entity_field: type
+          plugin_id: bundle
+        field_os2web_m_start_date_value_1:
+          id: field_os2web_m_start_date_value_1
+          table: node__field_os2web_m_start_date
+          field: field_os2web_m_start_date_value
+          relationship: none
+          group_type: group
+          admin_label: 'From date'
+          operator: '>='
+          value:
+            min: ''
+            max: ''
+            value: ''
+            type: offset
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_os2web_m_start_date_value_1_op
+            label: 'Fra dato'
+            description: ''
+            use_operator: false
+            operator: field_os2web_m_start_date_value_1_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: from_date
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+              anonymous: '0'
+              administrator: '0'
+              editor: '0'
+              webmaster: '0'
+            placeholder: dd-mm-åååå
+            min_placeholder: ''
+            max_placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          plugin_id: datetime
+        field_os2web_m_start_date_value:
+          id: field_os2web_m_start_date_value
+          table: node__field_os2web_m_start_date
+          field: field_os2web_m_start_date_value
+          relationship: none
+          group_type: group
+          admin_label: 'To date'
+          operator: '<='
+          value:
+            min: ''
+            max: ''
+            value: ''
+            type: date
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_os2web_m_start_date_value_op
+            label: 'Til dato'
+            description: ''
+            use_operator: false
+            operator: field_os2web_m_start_date_value_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: to_date
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+              anonymous: '0'
+              administrator: '0'
+              editor: '0'
+              webmaster: '0'
+            placeholder: dd-mm-åååå
+            min_placeholder: ''
+            max_placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          plugin_id: datetime
+        field_os2web_m_committee_target_id:
+          id: field_os2web_m_committee_target_id
+          table: node__field_os2web_m_committee
+          field: field_os2web_m_committee_target_id
+          relationship: none
+          group_type: group
+          admin_label: ''
+          operator: or
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_os2web_m_committee_target_id_op
+            label: 'Udvalg og byråd'
+            description: ''
+            use_operator: false
+            operator: field_os2web_m_committee_target_id_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: ud
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+              anonymous: '0'
+              administrator: '0'
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          reduce_duplicates: false
+          type: select
+          limit: true
+          vid: os2web_m_committee
+          hierarchy: false
+          error_message: true
+          plugin_id: taxonomy_index_tid
+      defaults:
+        filters: false
+        filter_groups: false
+        header: false
+      filter_groups:
+        operator: AND
+        groups:
+          1: AND
+      header: {  }
+      display_description: 'Search view with from and to dates to filter on'
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - url.query_args
+        - user
+        - 'user.node_grants:view'
+        - user.permissions
+      tags: {  }
+  os2web_meetings_embed_search_simple:
+    display_plugin: embed
+    id: os2web_meetings_embed_search_simple
+    display_title: 'Embed (simple)'
+    position: 1
+    display_options:
+      display_extenders: {  }
+      display_description: 'Simple default search view'
     cache_metadata:
       max-age: -1
       contexts:

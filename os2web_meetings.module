@@ -5,10 +5,13 @@
  * Primary module hooks for os2web_meetings module.
  */
 
+use Drupal\Component\Datetime\DateTimePlus;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\os2web_meetings\Entity\BulletPoint;
 use Drupal\os2web_meetings\Entity\Meeting;
 use Drupal\os2web_meetings\Form\SettingsForm;
+use Drupal\views\Plugin\views\query\QueryPluginBase;
 use Drupal\views\ViewExecutable;
 use Symfony\Component\Yaml\Yaml;
 
@@ -50,10 +53,45 @@ function os2web_meetings_node_delete(EntityInterface $entity) {
 /**
  * Implements hook_preprocess_paragraph.
  *
+ * Adding meeting list view into paragraph.
+ */
+function os2web_meetings_preprocess_paragraph__os2web_meetings(&$variables) {
+  if ($variables['view_mode'] == 'preview') {
+    return;
+  }
+
+  /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
+  $paragraph = $variables['paragraph'];
+  $display = $paragraph->field_os2web_meetings_par_view->value;
+
+  // Fallback for a default one.
+  if (!$display) {
+    $display = 'os2web_meetings_embed_coming_agendas';
+  }
+
+  $variables['content'] = views_embed_view('os2web_meetings', $display);
+}
+
+/**
+ * Implements hook_preprocess_paragraph.
+ *
  * Adding meeting search form into paragraph.
  */
 function os2web_meetings_preprocess_paragraph__os2web_meetings_search(&$variables) {
-  $variables['content'] = views_embed_view('os2web_meetings_search', 'os2web_meetings_embed_search_simple');
+  if ($variables['view_mode'] == 'preview') {
+    return;
+  }
+
+  /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
+  $paragraph = $variables['paragraph'];
+  $display = $paragraph->field_os2web_meetings_sp_view->value;
+
+  // Fallback for a default one.
+  if (!$display) {
+    $display = 'os2web_meetings_embed_search_simple';
+  }
+
+  $variables['content'] = views_embed_view('os2web_meetings_search', $display);
 }
 
 /**
@@ -97,6 +135,42 @@ function os2web_meetings_views_pre_view(ViewExecutable $view) {
   $filters['field_os2web_m_start_date_value']['group_info'] = $groupInfo;
 
   $view->display_handler->overrideOption('filters', $filters);
+}
+
+/**
+ * Implements hook_views_query_alter().
+ *
+ * Changes the time of the end date to 23:59:59, so that the result results of
+ * this date are also included.
+ */
+function os2web_meetings_views_query_alter(ViewExecutable $view, QueryPluginBase $query) {
+  if ($view->id() == 'os2web_meetings_search' && $view->current_display == 'os2web_meetings_embed_search_from_to_dates') {
+
+    // Updating to date fields, so that the time of the field 23:59:59
+    if (!isset($query->where[1]['conditions'][3])) {
+      return;
+    }
+
+    $to_date_field = $query->where[1]['conditions'][3]['field'];
+
+    // Getting the value.
+    //
+    // Value looks similar to this:
+    // DATE_FORMAT((node__field_os2web_m_start_date.field_os2web_m_start_date_value + INTERVAL 3600 SECOND), '%Y-%m-%d\T%H:%i:%s')
+    // <= DATE_FORMAT(('2020-11-09T23:00:00' + INTERVAL 3600 SECOND), '%Y-%m-%d\T%H:%i:%s')
+    preg_match("/DATE_FORMAT\(\('(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})'/", $to_date_field, $match);
+    $date_str = $match[1];
+
+    $dateTimePlus = DateTimePlus::createFromFormat(DateTimeItemInterface::DATETIME_STORAGE_FORMAT, $date_str);
+
+    // adding 23:59:59 to the date.
+    $dateTimePlus = $dateTimePlus->add(new DateInterval("PT23H59M"));
+    $new_date_str = $dateTimePlus->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT);
+
+    // Replacing the value.
+    $to_date_field = preg_replace("/$date_str/", $new_date_str, $to_date_field);
+    $query->where[1]['conditions'][3]['field'] = $to_date_field;
+  }
 }
 
 /**
