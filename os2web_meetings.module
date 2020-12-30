@@ -193,18 +193,19 @@ function os2web_meetings_preprocess_node(&$variables) {
         $count = isset($items) ? $items->count() : 0;
       }
       $openBp = [];
-      $closedlBp = [];
+      $closedBp = [];
       for ($i = 0; $i < $count; $i++) {
         // Saving BPA render and removing it from a list.
         $bp_render = $variables['content']['field_os2web_m_bps'][$i];
         unset($variables['content']['field_os2web_m_bps'][$i]);
-        /** @var \Drupal\node\NodeInterface $bpa */
+        /** @var \Drupal\node\NodeInterface $bp */
         $bp = $bp_render['#node'];
-        $isClosed = array_pop($bp->get("field_os2web_m_bp_closed")->getValue());
+        if ($isClosed = $bp->get("field_os2web_m_bp_closed")->getValue())
+        $isClosed = array_pop($isClosed);
 
         // If that a special BPA (Resume or Desicison) add it to special meta
         // field, otherwise save it as normal BPA.
-        if ($isClosed['value'] == '1') {
+        if (isset($isClosed) && is_array($isClosed) && $isClosed['value'] == '1') {
           $closedBp[] = $bp_render;
         }
         else {
