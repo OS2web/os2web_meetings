@@ -85,8 +85,7 @@ function os2web_meetings_preprocess_paragraph__os2web_meetings_search(&$variable
   /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
   $paragraph = $variables['paragraph'];
   $display = $paragraph->field_os2web_meetings_sp_view->value;
-
-  // Fallback for a default one.
+   // Fallback for a default one.
   if (!$display) {
     $display = 'os2web_meetings_embed_search_simple';
   }
@@ -113,9 +112,6 @@ function os2web_meetings_views_pre_view(ViewExecutable $view) {
   $options[] = strval($yearNow - 2);
   $options[] = strval($yearNow - 1);
   $options[] = strval($yearNow);
-  $options[] = strval($yearNow + 1);
-  $options[] = strval($yearNow + 2);
-
   $groupInfo['group_items'] = [];
   for ($i = 0; $i < count($options); $i++) {
     $year = $options[$i];
@@ -326,4 +322,15 @@ function os2web_meetings_update_entity_from_yml($module_name, $ymlFileName, $ent
   }
 
   $entity->save();
+}
+function os2web_meetings_form_alter(&$form,  \Drupal\Core\Form\FormStateInterface &$form_state, $form_id) {
+  // set default year
+  if ($form_id == 'views_exposed_form' && $form['#id'] = 'views-exposed-form-os2web-meetings-search-os2web-meetings-embed-search-simple') {
+    $yearNow = date("Y");
+    $userInput = $form_state->getUserInput('ar');
+    if (!isset($userInput['ar'])) {
+    $form_state->setUserInput(['ar' => strval($yearNow)]);
+    }
+
+  }
 }
