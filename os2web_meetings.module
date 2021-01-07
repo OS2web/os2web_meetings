@@ -323,14 +323,21 @@ function os2web_meetings_update_entity_from_yml($module_name, $ymlFileName, $ent
 
   $entity->save();
 }
-function os2web_meetings_form_alter(&$form,  \Drupal\Core\Form\FormStateInterface &$form_state, $form_id) {
-  // set default year
-  if ($form_id == 'views_exposed_form' && $form['#id'] = 'views-exposed-form-os2web-meetings-search-os2web-meetings-embed-search-simple') {
-    $yearNow = date("Y");
-    $userInput = $form_state->getUserInput('ar');
-    if (!isset($userInput['ar'])) {
-    $form_state->setUserInput(['ar' => strval($yearNow)]);
-    }
 
+/**
+ * Implements hook_form_alter().
+ *
+ * Sets default filter year to a current one, if user input is missing.
+ */
+function os2web_meetings_form_alter(&$form, \Drupal\Core\Form\FormStateInterface &$form_state, $form_id) {
+  // Set default year.
+  if ($form_id == 'views_exposed_form' && $form['#id'] == 'views-exposed-form-os2web-meetings-search-os2web-meetings-embed-search-simple') {
+    $yearNow = date("Y");
+    $userInput = $form_state->getUserInput();
+
+    if (!isset($userInput['ar'])) {
+      $userInput['ar'] = $yearNow;
+      $form_state->setUserInput($userInput);
+    }
   }
 }
