@@ -561,7 +561,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       $access = $enclosure['access'] ?? TRUE;
 
       // Handling closed content.
-      if (!$this->importClosedAgenda && $access === FALSE) {
+      if ($access === FALSE) {
         continue;
       }
 
