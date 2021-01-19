@@ -182,7 +182,8 @@ function os2web_meetings_preprocess_node(&$variables) {
       $month_value = $start_date->format('m');
       $variables['attributes']['class'][] = "month--$month_value";
     }
-    if ($showClosedAgendasSeparately) {
+
+    if ($variables['view_mode'] == 'full' && $showClosedAgendasSeparately) {
       $count = 0;
       if (isset($variables['content']['field_os2web_m_bps']['#items'])) {
         $items = $variables['content']['field_os2web_m_bps']['#items'];
@@ -197,7 +198,7 @@ function os2web_meetings_preprocess_node(&$variables) {
         /** @var \Drupal\node\NodeInterface $bp */
         $bp = $bp_render['#node'];
         if ($isClosed = $bp->get("field_os2web_m_bp_closed")->getValue())
-        $isClosed = array_pop($isClosed);
+          $isClosed = array_pop($isClosed);
 
         // If that a special BPA (Resume or Desicison) add it to special meta
         // field, otherwise save it as normal BPA.
@@ -208,9 +209,16 @@ function os2web_meetings_preprocess_node(&$variables) {
           $openBp[] = $bp_render;
         }
       }
+
       // Add normal BPA back to the render array.
-      $variables['content']['field_os2web_m_bps']['open'] = array_merge($variables['content']['field_os2web_m_bps'], $openBp);
-      $variables['content']['field_os2web_m_bps']['closed'] = array_merge($variables['content']['field_os2web_m_bps'], $closedBp);
+      if (isset($variables['content']['field_os2web_m_bps'])) {
+        $variables['content']['field_os2web_m_bps']['open'] = array_merge($variables['content']['field_os2web_m_bps'], $openBp);
+        $variables['content']['field_os2web_m_bps']['closed'] = array_merge($variables['content']['field_os2web_m_bps'], $closedBp);
+      }
+      else {
+        $variables['content']['field_os2web_m_bps']['open'] = $openBp;
+        $variables['content']['field_os2web_m_bps']['closed'] = $closedBp;
+      }
     }
   }
   elseif ($variables['node']->getType() == 'os2web_meetings_bp' && $variables['view_mode'] == 'teaser') {
@@ -324,14 +332,21 @@ function os2web_meetings_update_entity_from_yml($module_name, $ymlFileName, $ent
 
   $entity->save();
 }
-function os2web_meetings_form_alter(&$form,  \Drupal\Core\Form\FormStateInterface &$form_state, $form_id) {
-  // set default year
-  if ($form_id == 'views_exposed_form' && $form['#id'] = 'views-exposed-form-os2web-meetings-search-os2web-meetings-embed-search-simple') {
-    $yearNow = date("Y");
-    $userInput = $form_state->getUserInput('ar');
-    if (!isset($userInput['ar'])) {
-    $form_state->setUserInput(['ar' => strval($yearNow)]);
-    }
 
+/**
+ * Implements hook_form_alter().
+ *
+ * Sets default filter year to a current one, if user input is missing.
+ */
+function os2web_meetings_form_alter(&$form, \Drupal\Core\Form\FormStateInterface &$form_state, $form_id) {
+  // Set default year.
+  if ($form_id == 'views_exposed_form' && $form['#id'] == 'views-exposed-form-os2web-meetings-search-os2web-meetings-embed-search-simple') {
+    $yearNow = date("Y");
+    $userInput = $form_state->getUserInput();
+
+    if (!isset($userInput['ar'])) {
+      $userInput['ar'] = $yearNow;
+      $form_state->setUserInput($userInput);
+    }
   }
 }

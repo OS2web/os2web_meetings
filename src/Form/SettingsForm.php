@@ -55,19 +55,6 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => $this->config(SettingsForm::$configName)
         ->get('closed_bp_title_prefix'),
     ];
-
-    $form['meetings_import_details']['imported_closed_bps_titles'] = [
-      '#type' => 'textfield',
-      '#title' => t('Bullet point attachments titles, whose will be imported in closed bullet point'),
-      '#description' => t('Comma-separeted list of bullet point attachments titles, whose will be imported in closed bullet point. For example "indstilling,beslutning"'),
-      '#default_value' => $this->config(SettingsForm::$configName)
-        ->get('imported_closed_bps_titles'),
-      '#states' => [
-        'visible' => [
-          ':input[name="import_closed_agenda"]' => ['checked' => TRUE],
-        ],
-      ],
-    ];
     $form['meetings_import_details']['closed_bp_body_text'] = [
       '#type' => 'textarea',
       '#title' => t('Text for closed bullet point'),

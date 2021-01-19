@@ -50,7 +50,7 @@ display:
       pager:
         type: some
         options:
-          items_per_page: 15
+          items_per_page: 8
           offset: 0
       style:
         type: default
@@ -238,7 +238,20 @@ display:
           plugin_id: datetime
       header: {  }
       footer: {  }
-      empty: {  }
+      empty:
+        area:
+          id: area
+          table: views
+          field: area
+          relationship: none
+          group_type: group
+          admin_label: ''
+          empty: true
+          tokenize: false
+          content:
+            value: 'Ingen resultater'
+            format: wysiwyg_tekst
+          plugin_id: text
       relationships: {  }
       arguments: {  }
       display_extenders: {  }
@@ -387,17 +400,12 @@ display:
       defaults:
         filters: false
         filter_groups: false
-        pager: false
+        pager: true
         sorts: false
       filter_groups:
         operator: AND
         groups:
           1: AND
-      pager:
-        type: some
-        options:
-          items_per_page: 8
-          offset: 0
       sorts:
         field_os2web_m_start_date_value:
           id: field_os2web_m_start_date_value
