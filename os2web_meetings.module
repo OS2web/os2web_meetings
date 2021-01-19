@@ -275,8 +275,9 @@ function os2web_meetings_preprocess_field__node__field_os2web_m_bp_enclosures(&$
 
   foreach ($variables['items'] as $key => $item) {
     $description = $variables['items'][$key]['content']['#description'];
-    if (strlen($description) > $limit) {
-      $description = substr($description, 0, $limit) . '...';
+
+    if (mb_strlen($description) > $limit) {
+      $description = mb_substr($description, 0, $limit) . '...';
     }
 
     $variables['items'][$key]['content']['#description'] = $description;
