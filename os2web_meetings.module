@@ -106,12 +106,22 @@ function os2web_meetings_views_pre_view(ViewExecutable $view) {
   $groupInfo = $filters['field_os2web_m_start_date_value']['group_info'];
 
   // Creating new filter array.
-  $yearNow = date("Y");
-
   $options = [];
-  $options[] = strval($yearNow - 2);
-  $options[] = strval($yearNow - 1);
-  $options[] = strval($yearNow);
+
+  // Get all years we have meetings for.
+  $database = \Drupal::database();
+  $query = $database->query("SELECT DISTINCT SUBSTRING(field_os2web_m_start_date_value, 1, 4) from {node__field_os2web_m_start_date}");
+  $result = $query->fetchCol();
+
+  // User years, if we have none put at least the current year.
+  if (!empty($result)) {
+    $options = $result;
+  }
+  else {
+    $yearNow = date("Y");
+    $options[] = strval($yearNow);
+  }
+
   $groupInfo['group_items'] = [];
   for ($i = 0; $i < count($options); $i++) {
     $year = $options[$i];
