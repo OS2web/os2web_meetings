@@ -1,0 +1,6 @@
+services:
+  os2web_meetings_meeting_content_redirect:
+    class: Drupal\os2web_meetings\EventSubscriber\MeetingContentRedirectSubscriber
+    arguments: []
+    tags:
+      - {name: event_subscriber}
