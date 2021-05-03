@@ -27,7 +27,8 @@ class MeetingContentRedirectSubscriber implements EventSubscriberInterface {
   public function nodeRedirect(GetResponseEvent $event) {
     /** @var NodeInterface $node */
     $node = NULL;
-    if ($node = \Drupal::routeMatch()->getParameter('node')) {
+    $routeMatch = \Drupal::routeMatch();
+    if ($routeMatch->getRouteName() == 'entity.node.canonical' && $node = $routeMatch->getParameter('node')) {
       $meetingNode = NULL;
 
       if ($node->getType() == 'os2web_meetings_bp') {
