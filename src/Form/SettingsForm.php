@@ -163,12 +163,19 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => $this->config(SettingsForm::$configName)
         ->get('decision_bpa_title'),
     ];
-    $form['meetings_view_details']['text_before_bpa_number'] = [
+    $form['meetings_view_details']['text_before_bp_number'] = [
       '#type' => 'textfield',
       '#title' => t('Add text before bullet point number'),
       '#description' => t('This text will be added before bullet point number'),
       '#default_value' => $this->config(SettingsForm::$configName)
-        ->get('text_before_bpa_number'),
+        ->get('text_before_bp_number'),
+    ];
+    $form['meetings_view_details']['dot_after_bp_number'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Append dot (.) after bullet point number'),
+      '#description' => t('If this is checked, dot will be appended to bullet point number'),
+      '#default_value' => $this->config(SettingsForm::$configName)
+        ->get('dot_after_bp_number'),
     ];
     $form['meetings_view_details']['enclosures_max_title_length'] = [
       '#type' => 'number',

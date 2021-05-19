@@ -443,7 +443,10 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
   protected function processBulletPoints(array $bulletPoints, $directoryPath, $meeting = NULL) {
     $bulletPointsTargets = [];
     $settingFormConfig = \Drupal::config(SettingsForm::$configName);
-    $textBeforeBpaNumber = $settingFormConfig->get('text_before_bpa_number');
+
+    $textBeforeBpNumber = $settingFormConfig->get('text_before_bp_number');
+    $dotAfterBpNumber = $settingFormConfig->get('dot_after_bp_number');
+
     foreach ($bulletPoints as $bulletPoint) {
       $id = $bulletPoint['id'];
       $number = $bulletPoint['number'];
@@ -505,7 +508,23 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       // Setting fields.
       if (isset($number)) {
         $title = $bp->getTitle();
-        $bp->setTitle("$textBeforeBpaNumber $number. $title");
+
+        $titlePrefix = '';
+
+        // Adding text before number.
+        if (!empty($textBeforeBpNumber)) {
+          $titlePrefix = "$textBeforeBpNumber ";
+        }
+
+        // Adding number.
+        $titlePrefix .= $number;
+
+        // Adding dot after number.
+        if ($dotAfterBpNumber) {
+          $titlePrefix .= ".";
+        }
+
+        $bp->setTitle("$titlePrefix $title");
       }
       $bp->set('field_os2web_m_bp_enclosures', $enclosure_targets);
       $bp->set('field_os2web_m_bp_bpas', $bpa_targets);
