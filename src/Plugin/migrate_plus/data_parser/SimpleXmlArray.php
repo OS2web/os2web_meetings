@@ -51,7 +51,7 @@ class SimpleXmlArray extends SimpleXml {
     libxml_clear_errors();
     $settingFormConfig = \Drupal::config(SettingsForm::$configName);
     $bannedSpecialChar = $settingFormConfig->get('banned_special_char');
-    
+
     $xml_data = $this->getDataFetcherPlugin()->getResponseContent($url);
     if (!empty($bannedSpecialChar)) {
       $xml_data = str_replace(explode(',', $bannedSpecialChar), '', $xml_data);
@@ -59,7 +59,8 @@ class SimpleXmlArray extends SimpleXml {
     $xml = simplexml_load_string(trim($xml_data), 'SimpleXMLElement', LIBXML_NOCDATA);
     foreach (libxml_get_errors() as $error) {
       $error_string = self::parseLibXmlError($error);
-      throw new MigrateException($error_string);
+      \Drupal::logger('os2web_meetings')->error('URL skipped. XML invalid syntax: ' . $error_string);
+      return FALSE;
     }
     $this->registerNamespaces($xml);
     $xpath = $this->configuration['item_selector'];
