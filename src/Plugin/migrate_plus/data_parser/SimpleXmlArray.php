@@ -56,6 +56,10 @@ class SimpleXmlArray extends SimpleXml {
     if (!empty($bannedSpecialChar)) {
       $xml_data = str_replace(explode(',', $bannedSpecialChar), '', $xml_data);
     }
+
+    // Replacing the unformatted chars.
+    $xml_data = preg_replace("/&#x\d+;|&#x\w;/U", '', $xml_data);
+
     $xml = simplexml_load_string(trim($xml_data), 'SimpleXMLElement', LIBXML_NOCDATA);
     foreach (libxml_get_errors() as $error) {
       $error_string = self::parseLibXmlError($error);
