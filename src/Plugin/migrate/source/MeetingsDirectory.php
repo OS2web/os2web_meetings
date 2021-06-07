@@ -223,6 +223,11 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       $agendaTypeCanonical = $this->convertAgendaTypeToCanonical($source);
       $row->setSourceProperty('agenda_type', $agendaTypeCanonical);
 
+      // Skip Draft/Kladde status.
+      if ($agendaTypeCanonical == MeetingsDirectory::AGENDA_TYPE_KLADDE) {
+        return FALSE;
+      }
+
       // Process start date.
       $startDateCanonical = $this->convertStartDateToCanonical($source);
       $row->setSourceProperty('meeting_start_date', $startDateCanonical);
