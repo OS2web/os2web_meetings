@@ -153,3 +153,15 @@ function os2web_meetings_update_8007() {
 
   $config->save();
 }
+
+/**
+ * Updating views os2web_meetings_search.
+ */
+function os2web_meetings_update_8008() {
+  $path = drupal_get_path('module', 'os2web_meetings');
+  /** @var \Drupal\Core\Config\StorageInterface $active_storage */
+  $active_storage = \Drupal::service('config.storage');
+
+  // Updating view.
+  $active_storage->write('views.view.os2web_meetings_search', Yaml::parse(file_get_contents($path . '/config/optional/views.view.os2web_meetings_search.yml')));
+}
