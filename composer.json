@@ -7,6 +7,7 @@
     "license": "EUPL-1.2",
     "require": {
         "drupal/migrate_plus": "^5.1",
-        "drupal/migrate_tools": "^5.0"
+        "drupal/migrate_tools": "^5.0",
+        "drupal/printable": "^2.0"
     }
 }

@@ -7,6 +7,7 @@
 
 use Drupal\Core\Config\FileStorage;
 use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\os2web_meetings\Form\SettingsForm;
 use Symfony\Component\Yaml\Yaml;
 use Drupal\field\Entity\FieldConfig;
 
@@ -134,4 +135,33 @@ function os2web_meetings_update_8006() {
   /** @var \Drupal\Core\Config\StorageInterface $active_storage */
   $active_storage = \Drupal::service('config.storage');
   $active_storage->write('core.date_format.os2_month', Yaml::parse(file_get_contents($path . '/config/optional/core.date_format.os2_month.yml')));
+}
+
+/**
+ * Setting dot after BP number by default.
+ *
+ * Renaming config value.
+ */
+function os2web_meetings_update_8007() {
+  $config = \Drupal::service('config.factory')->getEditable(SettingsForm::$configName);
+
+  // Renaming config value.
+  $config->set('text_before_bp_number', $config->get('text_before_bpa_number'));
+
+  // Setting default to true.
+  $config->set('dot_after_bp_number', TRUE);
+
+  $config->save();
+}
+
+/**
+ * Updating views os2web_meetings_search.
+ */
+function os2web_meetings_update_8008() {
+  $path = drupal_get_path('module', 'os2web_meetings');
+  /** @var \Drupal\Core\Config\StorageInterface $active_storage */
+  $active_storage = \Drupal::service('config.storage');
+
+  // Updating view.
+  $active_storage->write('views.view.os2web_meetings_search', Yaml::parse(file_get_contents($path . '/config/optional/views.view.os2web_meetings_search.yml')));
 }

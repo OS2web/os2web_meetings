@@ -192,6 +192,8 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     // TODO: meeting skipping, meeting updating (agenda->referat etc)
     // Check if the current meeting needs creating updating.
     if (!$row->getIdMap() || $row->needsUpdate() || $this->aboveHighwater($row) || $this->rowChanged($row)) {
+      print_r(PHP_EOL . 'Importing meeting: ' . $agendaId . PHP_EOL);
+
       // Setting meeting source ID.
 
       $row->setDestinationProperty('field_os2web_m_source', $this->getPluginId());
@@ -220,6 +222,11 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       // Process agenda type.
       $agendaTypeCanonical = $this->convertAgendaTypeToCanonical($source);
       $row->setSourceProperty('agenda_type', $agendaTypeCanonical);
+
+      // Skip Draft/Kladde status.
+      if ($agendaTypeCanonical == MeetingsDirectory::AGENDA_TYPE_KLADDE) {
+        return FALSE;
+      }
 
       // Process start date.
       $startDateCanonical = $this->convertStartDateToCanonical($source);
@@ -443,7 +450,10 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
   protected function processBulletPoints(array $bulletPoints, $directoryPath, $meeting = NULL) {
     $bulletPointsTargets = [];
     $settingFormConfig = \Drupal::config(SettingsForm::$configName);
-    $textBeforeBpaNumber = $settingFormConfig->get('text_before_bpa_number');
+
+    $textBeforeBpNumber = $settingFormConfig->get('text_before_bp_number');
+    $dotAfterBpNumber = $settingFormConfig->get('dot_after_bp_number');
+
     foreach ($bulletPoints as $bulletPoint) {
       $id = $bulletPoint['id'];
       $number = $bulletPoint['number'];
@@ -505,7 +515,23 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       // Setting fields.
       if (isset($number)) {
         $title = $bp->getTitle();
-        $bp->setTitle("$textBeforeBpaNumber $number. $title");
+
+        $titlePrefix = '';
+
+        // Adding text before number.
+        if (!empty($textBeforeBpNumber)) {
+          $titlePrefix = "$textBeforeBpNumber ";
+        }
+
+        // Adding number.
+        $titlePrefix .= $number;
+
+        // Adding dot after number.
+        if ($dotAfterBpNumber) {
+          $titlePrefix .= ".";
+        }
+
+        $bp->setTitle("$titlePrefix $title");
       }
       $bp->set('field_os2web_m_bp_enclosures', $enclosure_targets);
       $bp->set('field_os2web_m_bp_bpas', $bpa_targets);
