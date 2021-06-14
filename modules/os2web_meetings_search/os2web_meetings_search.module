@@ -158,3 +158,23 @@ function os2web_meetings_search_mark_entity_updated(EntityInterface $entity) {
     }
   }
 }
+
+/**
+ * Implements template_preprocess_node().
+ *
+ * Overwrites BPA title for search result display/
+ * @param $variables
+ *
+ * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
+ */
+function os2web_meetings_search_preprocess_node(&$variables) {
+  if ($variables['view_mode'] == 'search_result') {
+    $node = $variables['elements']['#node'];
+    if ($node->getType() == 'os2web_meetings_bpa'){
+      $os2webBpa = new BulletPointAttachment($node);
+      $bp = $os2webBpa->getBulletPoint();
+
+      $variables['label'] = t('Bilag til: @title', ['@title' => $bp->getTitle()]);
+    }
+  }
+}
