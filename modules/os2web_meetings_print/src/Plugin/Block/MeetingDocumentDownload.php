@@ -71,4 +71,11 @@ class MeetingDocumentDownload extends BlockBase {
     return $output;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheContexts() {
+    return ['url.path'];
+  }
+
 }
