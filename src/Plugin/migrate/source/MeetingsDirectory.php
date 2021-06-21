@@ -176,7 +176,12 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
    * {@inheritDoc}
    */
   public function prepareRow(Row $row) {
+    // Always settings URL as empty array, so that this value is not used for
+    // row hashing.
+    $row->setSourceProperty('urls', []);
+
     $source = $row->getSource();
+
     $agendaId = $this->convertAgendaIdToCanonical($source);
     $row->setSourceProperty('agenda_id', $agendaId);
     // Removing meeting from a list of meeting scheduled to be unpublished.
