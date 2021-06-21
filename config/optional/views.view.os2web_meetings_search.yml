@@ -227,7 +227,7 @@ display:
           exposed: true
           expose:
             operator_id: field_os2web_m_committee_target_id_op
-            label: 'Udvalg og byråd'
+            label: 'Udvalg'
             description: ''
             use_operator: false
             operator: field_os2web_m_committee_target_id_op
