@@ -167,7 +167,7 @@ function os2web_meetings_update_8008() {
 }
 
 /**
- * Make sure that imported files did get .pdf extension.
+ * Make sure that imported pdf files did get .pdf extension.
  */
 function os2web_meetings_update_8009() {
   $field_name = 'field_os2web_m_doc';
@@ -210,12 +210,6 @@ function os2web_meetings_update_8009() {
       $file->setFilename($new_filename);
       $file->save();
       $counter++;
-      $messenger->addStatus(sprintf(
-        'File %s: %s has been updated with %s',
-        $file->id(),
-        $filename,
-        $new_filename
-      ));
     }
   }
   $messenger->addStatus(sprintf(

@@ -740,7 +740,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       $name = $basename;
       $ext = '';
     }
-    $original_name = $name;
+    $original_name = $name . $ext;
     // If the desired title is provided, use it. Otherwise take the original
     // title and concat '_0'.
     if ($title) {
