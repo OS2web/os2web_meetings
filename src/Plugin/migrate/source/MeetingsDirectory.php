@@ -193,7 +193,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     if (!$result) {
       return $result;
     }
-    // TODO: meeting skipping, meeting updating (agenda->referat etc)
+    // @todo Meeting skipping, meeting updating (agenda->referat etc)
     // Check if the current meeting needs creating updating.
     if (!$row->getIdMap() || $row->needsUpdate() || $this->aboveHighwater($row) || $this->rowChanged($row)) {
       print_r(PHP_EOL . 'Importing meeting: ' . $agendaId . PHP_EOL);
@@ -552,7 +552,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       }
     }
 
-    // TODO think about deleting the BPs.
+    // @todo Think about deleting the BPs.
     return $bulletPointsTargets;
   }
 
@@ -611,7 +611,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       }
     }
 
-    // TODO think about deleting the enclosures.
+    // @todo Think about deleting the enclosures.
     return $enclosureTargets;
   }
 
@@ -692,7 +692,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       }
     }
 
-    // TODO think about deleting the BPAs.
+    // @todo Think about deleting the BPAs.
     return $bpaTargets;
   }
 
