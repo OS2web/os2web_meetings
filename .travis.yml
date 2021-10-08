@@ -27,7 +27,7 @@ install:
   - npm install --global yarn
   - cd ../ && composer create-project drupal-composer/drupal-project:8.x-dev drupal --no-interaction
   - cd drupal
-  - composer require drush/drush:9.x-dev
+  - composer require drush/drush:9.x-dev -W
   - DRUPAL_ROOT=$(pwd)/web
   - export REPOSITORIES='"repositories":\ \['
   - export REPOSITORIES_REPLACE='"repositories":\[\{"type":"path","url":"..\/os2web_meetings","options":\{"symlink":false\}\},'
