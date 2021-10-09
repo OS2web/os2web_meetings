@@ -111,7 +111,6 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     // very few modifications.
     // Always get UNIX paths, skipping . and .., key as filename, and follow
     // links.
-
     $flags = \FilesystemIterator::UNIX_PATHS |
       \FilesystemIterator::SKIP_DOTS |
       \FilesystemIterator::KEY_AS_FILENAME |
@@ -194,13 +193,12 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     if (!$result) {
       return $result;
     }
-    // TODO: meeting skipping, meeting updating (agenda->referat etc)
+    // @todo Meeting skipping, meeting updating (agenda->referat etc)
     // Check if the current meeting needs creating updating.
     if (!$row->getIdMap() || $row->needsUpdate() || $this->aboveHighwater($row) || $this->rowChanged($row)) {
       print_r(PHP_EOL . 'Importing meeting: ' . $agendaId . PHP_EOL);
 
       // Setting meeting source ID.
-
       $row->setDestinationProperty('field_os2web_m_source', $this->getPluginId());
 
       $meetingDirectoryPath = $row->getSourceProperty('directory_path');
@@ -258,12 +256,12 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       $bulletPointTargets = $this->processBulletPoints($bulletPointsCanonical, $meetingDirectoryPath, $meeting);
       $row->setSourceProperty('bullet_points_targets', $bulletPointTargets);
 
-      // Process participants
+      // Process participants.
       $participantsCanonical = $this->convertParticipantToCanonical($source);
-      if (!empty($participantsCanonical['participants'])){
+      if (!empty($participantsCanonical['participants'])) {
         $row->setSourceProperty('participants', implode(',', $participantsCanonical['participants']));
       }
-      if (!empty($participantsCanonical['participants_canceled'])){
+      if (!empty($participantsCanonical['participants_canceled'])) {
         $row->setSourceProperty('cancel_participants', implode(',', $participantsCanonical['participants_canceled']));
       }
     }
@@ -554,7 +552,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       }
     }
 
-    // TODO think about deleting the BPs.
+    // @todo Think about deleting the BPs.
     return $bulletPointsTargets;
   }
 
@@ -613,7 +611,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       }
     }
 
-    // TODO think about deleting the enclosures.
+    // @todo Think about deleting the enclosures.
     return $enclosureTargets;
   }
 
@@ -694,7 +692,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       }
     }
 
-    // TODO think about deleting the BPAs.
+    // @todo Think about deleting the BPAs.
     return $bpaTargets;
   }
 
@@ -760,10 +758,10 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     $createFilesCopy = $settingFormConfig->get('create_files_copy');
     try {
       if ($createFilesCopy) {
-      $unmanagedFilePath = $file_system->copy($uri, $copyUri, FileSystemInterface::EXISTS_REPLACE);
+        $unmanagedFilePath = $file_system->copy($uri, $copyUri, FileSystemInterface::EXISTS_REPLACE);
 
-      $data = file_get_contents($unmanagedFilePath);
-      $managedFile = file_save_data($data, $unmanagedFilePath, FileSystemInterface::EXISTS_REPLACE);
+        $data = file_get_contents($unmanagedFilePath);
+        $managedFile = file_save_data($data, $unmanagedFilePath, FileSystemInterface::EXISTS_REPLACE);
       }
       else {
         $current_user = \Drupal::currentUser();

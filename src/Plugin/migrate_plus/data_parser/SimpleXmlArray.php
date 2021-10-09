@@ -2,7 +2,6 @@
 
 namespace Drupal\os2web_meetings\Plugin\migrate_plus\data_parser;
 
-use Drupal\migrate\MigrateException;
 use Drupal\migrate_plus\Plugin\migrate_plus\data_parser\SimpleXml;
 use Drupal\os2web_meetings\Form\SettingsForm;
 

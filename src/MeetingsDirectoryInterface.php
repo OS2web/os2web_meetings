@@ -22,7 +22,7 @@ interface MeetingsDirectoryInterface extends ImportAwareInterface {
    * @var string
    */
   const AGENDA_TYPE_REFERAT = 'Referat';
-  
+
   /**
    * Agenda type Kladde.
    *
@@ -200,6 +200,8 @@ interface MeetingsDirectoryInterface extends ImportAwareInterface {
    *
    * @param array $source
    *   Raw array values from ESDH provider.
+   * @param bool $access
+   *   Access boolean argument.
    *
    * @return mixed
    *   Array of attachments in canonical format:
@@ -236,7 +238,7 @@ interface MeetingsDirectoryInterface extends ImportAwareInterface {
    *   ]
    */
   public function convertEnclosuresToCanonical(array $source);
-  
+
   /**
    * Convert the agenda participants to canonical format.
    *
@@ -249,7 +251,7 @@ interface MeetingsDirectoryInterface extends ImportAwareInterface {
    *   Agenda type as string.
    */
   public function convertParticipantToCanonical(array $source);
-  
+
   /**
    * Convert the agenda id to canonical format.
    *
@@ -261,7 +263,6 @@ interface MeetingsDirectoryInterface extends ImportAwareInterface {
    * @return string
    *   Agenda type as string.
    */
-  
   public function convertAgendaIdToCanonical(array $source);
-  
+
 }

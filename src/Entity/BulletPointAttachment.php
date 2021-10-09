@@ -2,7 +2,6 @@
 
 namespace Drupal\os2web_meetings\Entity;
 
-use Drupal\decreto_content_modify\Entity\DecretoBulletPoint;
 use Drupal\node\Entity\Node;
 
 /**
