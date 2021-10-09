@@ -2,7 +2,6 @@
 
 namespace Drupal\os2web_meetings\EventSubscriber;
 
-use Drupal\node\NodeInterface;
 use Drupal\os2web_meetings\Entity\BulletPoint;
 use Drupal\os2web_meetings\Entity\BulletPointAttachment;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -25,7 +24,7 @@ class MeetingContentRedirectSubscriber implements EventSubscriberInterface {
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
   public function nodeRedirect(GetResponseEvent $event) {
-    /** @var NodeInterface $node */
+    /** @var \Drupal\node\NodeInterface $node */
     $node = NULL;
     $routeMatch = \Drupal::routeMatch();
     if ($routeMatch->getRouteName() == 'entity.node.canonical' && $node = $routeMatch->getParameter('node')) {
@@ -35,7 +34,7 @@ class MeetingContentRedirectSubscriber implements EventSubscriberInterface {
         $bulletPoint = new BulletPoint($node);
         $meetingNode = $bulletPoint->getMeeting();
       }
-      elseif ($node->getType() == 'os2web_meetings_bpa'){
+      elseif ($node->getType() == 'os2web_meetings_bpa') {
         $bpa = new BulletPointAttachment($node);
         $meetingNode = $bpa->getMeeting();
       }

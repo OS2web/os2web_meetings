@@ -165,3 +165,55 @@ function os2web_meetings_update_8008() {
   // Updating view.
   $active_storage->write('views.view.os2web_meetings_search', Yaml::parse(file_get_contents($path . '/config/optional/views.view.os2web_meetings_search.yml')));
 }
+
+/**
+ * Make sure that imported pdf files did get .pdf extension.
+ */
+function os2web_meetings_update_8009() {
+  $field_name = 'field_os2web_m_doc';
+  $bundle = 'os2web_meetings_meeting';
+  $connection = \Drupal::database();
+  $result_m = $connection->select('node__' . $field_name, 'f')
+    ->fields('f', array($field_name . '_target_id'))
+    ->distinct(TRUE)
+    ->condition('bundle', $bundle)
+    ->execute()->fetchCol();
+
+  $field_name = 'field_os2web_m_bp_enclosures';
+  $bundle = 'os2web_meetings_bp';
+  $connection = \Drupal::database();
+  $result_bp = $connection->select('node__' . $field_name, 'f')
+    ->fields('f', array($field_name . '_target_id'))
+    ->distinct(TRUE)
+    ->condition('bundle', $bundle)
+    ->execute()->fetchCol();
+
+  $field_name = 'field_os2web_m_bpa_file';
+  $bundle = 'os2web_meetings_bpa';
+  $connection = \Drupal::database();
+  $result_bpa = $connection->select('node__' . $field_name, 'f')
+    ->fields('f', array($field_name . '_target_id'))
+    ->distinct(TRUE)
+    ->condition('bundle', $bundle)
+    ->execute()->fetchCol();
+  $result = array_merge($result_m, $result_bp, $result_bpa);
+
+  $messenger = \Drupal::messenger();
+  $counter = 0;
+  foreach ($result as $id) {
+    $file = \Drupal\file\Entity\File::load($id);
+    $filename = $file->getFilename();
+    $ext = pathinfo($filename, PATHINFO_EXTENSION);
+
+    if ($ext != 'pdf' && $file->getMimeType() == 'application/pdf') {
+      $new_filename = $filename .'.pdf';
+      $file->setFilename($new_filename);
+      $file->save();
+      $counter++;
+    }
+  }
+  $messenger->addStatus(sprintf(
+    '%s files has been updated with correct extension',
+    $counter
+  ));
+}

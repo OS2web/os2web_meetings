@@ -88,7 +88,7 @@ class SettingsForm extends ConfigFormBase {
       '#title' => t('Create copy of attachments files during import'),
       '#description' => t('This decides if file copy should be created when enclosures imported'),
       '#default_value' => ($this->config(SettingsForm::$configName)
-        ->get('create_files_copy') !== null) ? $this->config(SettingsForm::$configName)
+        ->get('create_files_copy') !== NULL) ? $this->config(SettingsForm::$configName)
         ->get('create_files_copy') : TRUE,
     ];
 
@@ -188,7 +188,7 @@ class SettingsForm extends ConfigFormBase {
       '#type' => 'checkbox',
       '#title' => t('Show closed agendas separately'),
       '#default_value' => $this->config(SettingsForm::$configName)
-         ->get('show_closed_agendas_separately'),
+        ->get('show_closed_agendas_separately'),
     ];
 
     return parent::buildForm($form, $form_state);

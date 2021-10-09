@@ -4,10 +4,7 @@ namespace Drupal\os2web_meetings_print\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Link;
-use Drupal\Core\Url;
-use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
-use Drupal\os2web_pagebuilder\Form\SettingsForm;
 
 /**
  * Provides a 'OS2Web Meetings Document Download' block.
@@ -40,7 +37,7 @@ class MeetingDocumentDownload extends BlockBase {
   /**
    * Make block links markup.
    *
-   * @param NodeInterface $meeting
+   * @param \Drupal\node\Entity\NodeInterface $meeting
    *   Meeting node.
    *
    * @return string
@@ -57,17 +54,6 @@ class MeetingDocumentDownload extends BlockBase {
     $pdfLink = Link::fromTextAndUrl(t('Download samlet dokument'), $pdfUrl)->toString();
 
     $output = '<span class="file file--mime-application-pdf file--application-pdf">' . $pdfLink . '</span>';
-
-//    $output = '<ul class="related-links">';
-//
-//    /** @var \Drupal\node\NodeInterface $node */
-//    foreach ($related_nodes as $node) {
-//      $output .= '<li>';
-//      $output .= $node->toLink()->toString();
-//      $output .= '</li>';
-//    }
-//    $output .= '</ul>';
-
     return $output;
   }
 
