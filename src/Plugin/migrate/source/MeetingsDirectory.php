@@ -216,7 +216,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
 
       // Skip if committee is not whitelisted.
       if (!empty($this->committeesWhitelist)) {
-        if (!in_array($committeeCanonical['id'], $this->committeesWhitelist)) {
+        if (!in_array($committeeCanonical['id'], $this->committeesWhitelist) && !in_array($committeeCanonical['name'], $this->committeesWhitelist)) {
           return FALSE;
         }
       }

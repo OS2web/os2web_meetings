@@ -22,7 +22,7 @@ Import is handled via Migrate API, which is part of the Drupal 8 core functional
 ## Additional settings
 Settings are available under ```admin/config/system/os2web-meetings```
 * **Import closed agenda** - If closed agenda will be imported, otherwise the closed content is skipped.
-* **Whitelist of the committees** - If committee is not whitelisted, its meetings will be ignored.
+* **Whitelist of the committees** - If committee is not whitelisted, its meetings will be ignored (committee ID's or names).
 * **Unpublish missing agendas** - If this plugin missing agendas will be unpublished. DO NOT use this setting if you are planning to import agendas in with max limit.
 * **Process enclosures (file) as attachments** - This decides if the enclosures shall be processed as the attachments with files. If unchecked enclosures will be added to the list of bullet point enclosures.
 * **Clear HTML tags** - Comma-separated list of HTML tags, which style attribute shall be removed during import (it will remove only style HTML attribute of a given tag).

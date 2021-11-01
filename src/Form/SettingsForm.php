@@ -69,9 +69,9 @@ class SettingsForm extends ConfigFormBase {
     ];
 
     $form['meetings_import_details']['committee_whitelist'] = [
-      '#type' => 'textfield',
+      '#type' => 'textarea',
       '#title' => t('Whitelist of the committees'),
-      '#description' => t('If committee is not whitelisted, its meetings will be ignored. Use comma separated list of committee IDs. Empty list = allow ALL.'),
+      '#description' => t('If committee is not whitelisted, its meetings will be ignored. Use comma separated list of committee IDs or committee names. Empty list = allow ALL.'),
       '#default_value' => $this->config(SettingsForm::$configName)
         ->get('committee_whitelist'),
     ];
@@ -182,7 +182,7 @@ class SettingsForm extends ConfigFormBase {
       '#title' => t('Maximum length for BP enclosures title'),
       '#description' => t('If enclosure lenght if above the limit, it will be cut and ... will be added.'),
       '#default_value' => $this->config(SettingsForm::$configName)
-        ->get('enclosures_max_title_length'),
+        ->get('enclosures_max_title_length') ?? 20,
     ];
     $form['meetings_view_details']['show_closed_agendas_separately'] = [
       '#type' => 'checkbox',
