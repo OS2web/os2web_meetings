@@ -10,4 +10,5 @@ dependencies:
   - drupal:text
   - migrate_plus
   - migrate_tools
+  - os2web_hjemmeside
 configure: os2web_meetings.settings_form
