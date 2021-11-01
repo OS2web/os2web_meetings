@@ -107,6 +107,34 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
    * {@inheritdoc}
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration) {
+    // Only collect URL is they aren't collected already.
+    if (!isset($configuration['urls'])) {
+      $urls = $this->collectAgendaUrls($configuration);
+      $configuration['urls'] = $urls;
+    }
+
+    // Save committees whitelist.
+    $settingFormConfig = \Drupal::config(SettingsForm::$configName);
+    $committeesWhitelistSettings = $settingFormConfig->get('committee_whitelist');
+    $this->committeesWhitelist = !empty($committeesWhitelistSettings) ? explode(',', $committeesWhitelistSettings) : [];
+
+    $this->importClosedAgenda = $settingFormConfig->get('import_closed_agenda');
+    $this->closedBulletPointTitlePrefix = $settingFormConfig->get('closed_bp_title_prefix');
+    $this->closedBulletPointBodyText = $settingFormConfig->get('closed_bp_body_text');
+    $this->unpublishMissingAgendas = $settingFormConfig->get('unpublish_missing_agendas');
+    $this->processEnclosuresAsAttachments = $settingFormConfig->get('process_enclosures_as_attachments');
+    $this->clearHtmlTagsList = str_getcsv($settingFormConfig->get('clear_html_tags_list'));
+    $this->replaceMultipleNbsp = $settingFormConfig->get('replace_multiple_nbsp');
+    $this->replaceEmptyParagraphs = $settingFormConfig->get('replace_empty_paragraphs');
+    $this->maxSequentialBr = $settingFormConfig->get('max_sequential_br') ?? 1;
+
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function collectAgendaUrls($configuration) {
     // Code below is almost identical copy from "migrate_directory" module with
     // very few modifications.
     // Always get UNIX paths, skipping . and .., key as filename, and follow
@@ -153,23 +181,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       $urls[] = $fileinfo->getPathname();
     }
 
-    $configuration['urls'] = $urls;
-
-    // Save committees whitelist.
-    $settingFormConfig = \Drupal::config(SettingsForm::$configName);
-    $committeesWhitelistSettings = $settingFormConfig->get('committee_whitelist');
-    $this->committeesWhitelist = !empty($committeesWhitelistSettings) ? explode(',', $committeesWhitelistSettings) : [];
-
-    $this->importClosedAgenda = $settingFormConfig->get('import_closed_agenda');
-    $this->closedBulletPointTitlePrefix = $settingFormConfig->get('closed_bp_title_prefix');
-    $this->closedBulletPointBodyText = $settingFormConfig->get('closed_bp_body_text');
-    $this->unpublishMissingAgendas = $settingFormConfig->get('unpublish_missing_agendas');
-    $this->processEnclosuresAsAttachments = $settingFormConfig->get('process_enclosures_as_attachments');
-    $this->clearHtmlTagsList = str_getcsv($settingFormConfig->get('clear_html_tags_list'));
-    $this->replaceMultipleNbsp = $settingFormConfig->get('replace_multiple_nbsp');
-    $this->replaceEmptyParagraphs = $settingFormConfig->get('replace_empty_paragraphs');
-    $this->maxSequentialBr = $settingFormConfig->get('max_sequential_br') ?? 1;
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
+    return $urls;
   }
 
   /**
@@ -243,8 +255,10 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
 
       // Process agenda document.
       $agendaDocumentCanonical = $this->convertAgendaDocumentToCanonical($source);
-      $agendaDocumentTarget = $this->processAgendaDocument($agendaDocumentCanonical, $meetingDirectoryPath);
-      $row->setSourceProperty('agenda_document', $agendaDocumentTarget);
+      if (!empty($agendaDocumentCanonical)) {
+        $agendaDocumentTarget = $this->processAgendaDocument($agendaDocumentCanonical, $meetingDirectoryPath);
+        $row->setSourceProperty('agenda_document', $agendaDocumentTarget);
+      }
 
       // Process location.
       $locationCanonical = $this->convertLocationToCanonical($source);

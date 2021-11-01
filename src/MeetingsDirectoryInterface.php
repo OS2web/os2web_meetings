@@ -45,6 +45,20 @@ interface MeetingsDirectoryInterface extends ImportAwareInterface {
   const AGENDA_ACCESS_CLOSED = 2;
 
   /**
+   * Collects the list of URLs that need to be imported.
+   *
+   * Traverses though the directory recursively and collects the list of URLs
+   * that need to be imported.
+   *
+   * @param $configuration
+   *   Meeting directory configuration object.
+   *
+   * @return array
+   *   List of URL that will be imported.
+   */
+  public function collectAgendaUrls($configuration);
+
+  /**
    * Provides a path to meeting manifests.
    *
    * @return string
