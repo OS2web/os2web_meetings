@@ -209,11 +209,10 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     // TODO: meeting skipping, meeting updating (agenda->referat etc)
     // Check if the current meeting needs creating updating.
     if (!$row->getIdMap() || $row->needsUpdate() || $this->aboveHighwater($row) || $this->rowChanged($row)) {
-      // Setting meeting source ID.
-
-      $row->setDestinationProperty('field_os2web_m_source', $this->getPluginId());
-
       $meetingDirectoryPath = $row->getSourceProperty('directory_path');
+
+      // Setting meeting source ID.
+      $row->setDestinationProperty('field_os2web_m_source', $this->getPluginId());
 
       // Process agenda access.
       $agendaAccessCanonical = $this->convertAgendaAccessToCanonical($source);
@@ -221,6 +220,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       if (!$this->importClosedAgenda && $agendaAccessCanonical != MeetingsDirectoryInterface::AGENDA_ACCESS_OPEN) {
         return FALSE;
       }
+
       // Process committee.
       $committeeCanonical = $this->convertCommitteeToCanonical($source);
 

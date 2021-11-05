@@ -26,6 +26,13 @@ class SimpleXmlArray extends SimpleXml {
   public $directoryPath;
 
   /**
+   * XML manifest path.
+   *
+   * @var string
+   */
+  public $manifestPath;
+
+  /**
    * Overrides inherited openSourceUrl function.
    *
    * The difference with inherited function is that simplexml is loaded
@@ -82,6 +89,9 @@ class SimpleXmlArray extends SimpleXml {
     // Saving directory path.
     $this->directoryPath = dirname($url);
 
+    // Saving XML path.
+    $this->manifestPath = $url;
+
     return TRUE;
   }
 
@@ -136,6 +146,7 @@ class SimpleXmlArray extends SimpleXml {
       }
 
       $this->currentItem['directory_path'] = $this->directoryPath;
+      $this->currentItem['manifest_path'] = $this->manifestPath;
     }
   }
 
