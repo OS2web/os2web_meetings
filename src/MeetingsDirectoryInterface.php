@@ -185,6 +185,8 @@ interface MeetingsDirectoryInterface extends ImportAwareInterface {
    *       'number' => 1,
    *       'title' => 'Bullet point title',
    *       'access' => TRUE/FALSE, // TRUE is default
+   *       'case_nr' => '12/12345'
+   *       'com_name' => 'Committee name'
    *       'attachments' => [
    *           0 => [
    *             'id' => '456'

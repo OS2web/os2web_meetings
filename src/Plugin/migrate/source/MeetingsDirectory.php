@@ -477,6 +477,8 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       $title = $bulletPoint['title'];
       // If access is not set explicitly, consider it as open.
       $access = $bulletPoint['access'] ?? TRUE;
+      $case_nr = $bulletPoint['case_nr'] ?? '';
+      $com_name = $bulletPoint['com_name'] ?? '';
       $attachments = $bulletPoint['attachments'];
       $enclosures = $bulletPoint['enclosures'];
       $enclosure_targets = [];
@@ -550,6 +552,8 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
 
         $bp->setTitle("$titlePrefix $title");
       }
+      $bp->set('field_os2web_m_bp_case', $case_nr);
+      $bp->set('field_os2web_m_bp_com_name', $com_name);
       $bp->set('field_os2web_m_bp_enclosures', $enclosure_targets);
       $bp->set('field_os2web_m_bp_bpas', $bpa_targets);
       $bp->set('field_os2web_m_bp_closed', ['value' => !$access]);

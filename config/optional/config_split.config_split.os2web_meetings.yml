@@ -11,6 +11,9 @@ blacklist:
   - 'os2web_meetings*'
   - '*os2web_meetings'
   - '*os2web_meetings*'
+  - 'os2web_m_*'
+  - '*os2web_m_*'
+  - 'os2web_m_*'
 graylist: {  }
 graylist_dependents: false
 graylist_skip_equal: false

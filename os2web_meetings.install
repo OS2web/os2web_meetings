@@ -165,3 +165,34 @@ function os2web_meetings_update_8008() {
   // Updating view.
   $active_storage->write('views.view.os2web_meetings_search', Yaml::parse(file_get_contents($path . '/config/optional/views.view.os2web_meetings_search.yml')));
 }
+
+/**
+ * Adding fields for Case number and BP committee name.
+ */
+function os2web_meetings_update_8009() {
+  $path = drupal_get_path('module', 'os2web_meetings');
+
+  // Create field storage.
+  $storageConfug = Yaml::parse(file_get_contents($path . '/config/install/field.storage.node.field_os2web_m_bp_case.yml'));
+  if (!FieldStorageConfig::loadByName($storageConfug['entity_type'], $storageConfug['field_name'])) {
+    FieldStorageConfig::create($storageConfug)->save();
+  }
+
+  // Create field instance.
+  $fieldConfig = Yaml::parse(file_get_contents($path . '/config/install/field.field.node.os2web_meetings_bp.field_os2web_m_bp_case.yml'));
+  if (!FieldConfig::loadByName($fieldConfig['entity_type'], $fieldConfig['bundle'], $fieldConfig['field_name'])) {
+    FieldConfig::create($fieldConfig)->save();
+  }
+
+  // Create field storage.
+  $storageConfug = Yaml::parse(file_get_contents($path . '/config/install/field.storage.node.field_os2web_m_bp_com_name.yml'));
+  if (!FieldStorageConfig::loadByName($storageConfug['entity_type'], $storageConfug['field_name'])) {
+    FieldStorageConfig::create($storageConfug)->save();
+  }
+
+  // Create field instance.
+  $fieldConfig = Yaml::parse(file_get_contents($path . '/config/install/field.field.node.os2web_meetings_bp.field_os2web_m_bp_com_name.yml'));
+  if (!FieldConfig::loadByName($fieldConfig['entity_type'], $fieldConfig['bundle'], $fieldConfig['field_name'])) {
+    FieldConfig::create($fieldConfig)->save();
+  }
+}
