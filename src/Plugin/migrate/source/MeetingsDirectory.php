@@ -378,11 +378,17 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     $committee = Committee::loadByEsdhId($id);
 
     if (!$committee) {
-      $committee = Term::create([
-        'vid' => 'os2web_m_committee',
-        'name' => $name,
-        'field_os2web_m_esdh_id' => $id,
-      ]);
+      if ($committee = Committee::loadByName($name)) {
+        $committee = $committee->getEntity();
+        $committee->field_os2web_m_esdh_id[] = ['value' =>$id];
+      }
+      else {
+        $committee = Term::create([
+          'vid' => 'os2web_m_committee',
+          'name' => $name,
+          'field_os2web_m_esdh_id' => $id,
+        ]);
+      }
     }
     else {
       $committee = $committee->getEntity();

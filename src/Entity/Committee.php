@@ -33,4 +33,23 @@ class Committee extends Os2webTaxonomyTermBase {
     return NULL;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public static function loadByName($name) {
+    /** @var \Drupal\Core\Entity\ContentEntityStorageInterface $storage */
+    $entity_type_manager = \Drupal::entityTypeManager();
+    $storage = $entity_type_manager->getStorage('taxonomy_term');
+
+    $entities = $storage->loadByProperties([
+      'vid' => 'os2web_m_committee',
+      'name' => $name,
+    ]);
+    if ($entity = reset($entities)) {
+      return new Committee($entity);
+    }
+
+    return NULL;
+  }
+
 }
