@@ -196,3 +196,13 @@ function os2web_meetings_update_8009() {
     FieldConfig::create($fieldConfig)->save();
   }
 }
+
+/**
+ * Making field for ESDH ID  multivalue.
+ */
+function os2web_meetings_update_8010() {
+  // Updating field storage.
+  $storegeConfig = FieldStorageConfig::loadByName('taxonomy_term', 'field_os2web_m_esdh_id');
+  $storegeConfig->setCardinality(-1);
+  $storegeConfig->save();
+}
