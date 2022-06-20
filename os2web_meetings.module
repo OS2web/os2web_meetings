@@ -180,6 +180,28 @@ function os2web_meetings_views_query_alter(ViewExecutable $view, QueryPluginBase
 }
 
 /**
+ * Implements hook_form_views_exposed_form_alter().
+ *
+ * Sets from day as today and to day as today +14.
+ */
+function os2web_meetings_form_views_exposed_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  if ($form['#id'] == 'views-exposed-form-os2web-meetings-search-os2web-meetings-embed-search-from-to-dates') {
+    $request = \Drupal::request();
+    if (is_null($request->get('from_date')) && is_null($request->get('to_date'))) {
+      // Getting user input.
+      $input = $form_state->getUserInput();
+
+      $input['from_date'] = date('Y-m-d');
+      $end_date = new DateTime('+14 days');
+      $input['to_date'] = date_format($end_date, 'Y-m-d');
+
+      // Setting modified user input.
+      $form_state->setUserInput($input);
+    }
+  }
+}
+
+/**
  * Implements hook_preprocess_node().
  */
 function os2web_meetings_preprocess_node(&$variables) {
