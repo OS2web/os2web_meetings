@@ -667,6 +667,9 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
     foreach ($attachments as $attachment) {
       $id = $attachment['id'];
       $title = $attachment['title'];
+      if (is_array($attachment['body'])) {
+        $attachment['body'] = implode("", $attachment['body']);
+      }
       $body = $this->cleanHtml($attachment['body']);
       $body = $this->fixImagePaths($body, $directoryPath);
       $uri = $attachment['uri'] ?? NULL;
