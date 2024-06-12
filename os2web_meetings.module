@@ -5,9 +5,15 @@
  * Primary module hooks for os2web_meetings module.
  */
 
+use Drupal\Component\Datetime\DateTimePlus;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\os2web_meetings\Entity\BulletPoint;
 use Drupal\os2web_meetings\Entity\Meeting;
+use Drupal\os2web_meetings\Form\SettingsForm;
+use Drupal\views\Plugin\views\query\QueryPluginBase;
+use Drupal\views\ViewExecutable;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Implements hook_ENTITY_TYPE_delete().
@@ -41,5 +47,340 @@ function os2web_meetings_node_delete(EntityInterface $entity) {
   }
   elseif ($entity->bundle() == 'os2web_meetings_bp') {
 
+  }
+}
+
+/**
+ * Implements hook_preprocess_paragraph.
+ *
+ * Adding meeting list view into paragraph.
+ */
+function os2web_meetings_preprocess_paragraph__os2web_meetings(&$variables) {
+  if ($variables['view_mode'] == 'preview') {
+    return;
+  }
+
+  /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
+  $paragraph = $variables['paragraph'];
+  $display = $paragraph->field_os2web_meetings_par_view->value;
+
+  // Fallback for a default one.
+  if (!$display) {
+    $display = 'os2web_meetings_embed_coming_agendas';
+  }
+
+  $variables['content'] = views_embed_view('os2web_meetings', $display);
+}
+
+/**
+ * Implements hook_preprocess_paragraph.
+ *
+ * Adding meeting search form into paragraph.
+ */
+function os2web_meetings_preprocess_paragraph__os2web_meetings_search(&$variables) {
+  if ($variables['view_mode'] == 'preview') {
+    return;
+  }
+
+  /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
+  $paragraph = $variables['paragraph'];
+  $display = $paragraph->field_os2web_meetings_sp_view->value;
+   // Fallback for a default one.
+  if (!$display) {
+    $display = 'os2web_meetings_embed_search_simple';
+  }
+
+  $variables['content'] = views_embed_view('os2web_meetings_search', $display);
+}
+
+/**
+ * Implements HOOK_views_pre_view().
+ */
+function os2web_meetings_views_pre_view(ViewExecutable $view) {
+  if ($view->id() !== 'os2web_meetings_search' || $view->current_display !== 'os2web_meetings_embed_search_simple') {
+    return;
+  }
+
+  // Fetching filter info.
+  $filters = $view->display_handler->getOption('filters');
+  $groupInfo = $filters['field_os2web_m_start_date_value']['group_info'];
+
+  // Creating new filter array.
+  $options = [];
+
+  // Get all years we have meetings for.
+  $database = \Drupal::database();
+  $query = $database->query("SELECT DISTINCT SUBSTRING(field_os2web_m_start_date_value, 1, 4) from {node__field_os2web_m_start_date} where SUBSTRING(field_os2web_m_start_date_value, 1, 4) >= 2015");
+  $result = $query->fetchCol();
+
+  // User years, if we have none put at least the current year.
+  if (!empty($result)) {
+    $options = $result;
+  }
+  else {
+    $yearNow = date("Y");
+    $options[] = strval($yearNow);
+  }
+
+  $groupInfo['group_items'] = [];
+  for ($i = 0; $i < count($options); $i++) {
+    $year = $options[$i];
+    $groupInfo['group_items'][$year] = [
+      'title' => $year,
+      'operator' => 'between',
+      'value' => [
+        'type' => 'date',
+        'value' => '',
+        'min' => $year . '-01-01 00:00:00',
+        'max' => $year . '-12-31 23:59:59',
+      ],
+    ];
+  }
+
+  // Overriding filters.
+  $filters['field_os2web_m_start_date_value']['group_info'] = $groupInfo;
+
+  $view->display_handler->overrideOption('filters', $filters);
+}
+
+/**
+ * Implements hook_views_query_alter().
+ *
+ * Changes the time of the end date to 23:59:59, so that the result results of
+ * this date are also included.
+ */
+function os2web_meetings_views_query_alter(ViewExecutable $view, QueryPluginBase $query) {
+  if ($view->id() == 'os2web_meetings_search' && $view->current_display == 'os2web_meetings_embed_search_from_to_dates') {
+
+    // Updating to date fields, so that the time of the field 23:59:59
+    if (!isset($query->where[1]['conditions'][3])) {
+      return;
+    }
+
+    $to_date_field = $query->where[1]['conditions'][3]['field'];
+
+    // Getting the value.
+    //
+    // Value looks similar to this:
+    // DATE_FORMAT((node__field_os2web_m_start_date.field_os2web_m_start_date_value + INTERVAL 3600 SECOND), '%Y-%m-%d\T%H:%i:%s')
+    // <= DATE_FORMAT(('2020-11-09T23:00:00' + INTERVAL 3600 SECOND), '%Y-%m-%d\T%H:%i:%s')
+    preg_match("/DATE_FORMAT\(\('(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})'/", $to_date_field, $match);
+    $date_str = $match[1];
+
+    $dateTimePlus = DateTimePlus::createFromFormat(DateTimeItemInterface::DATETIME_STORAGE_FORMAT, $date_str);
+
+    // adding 23:59:59 to the date.
+    $dateTimePlus = $dateTimePlus->add(new DateInterval("PT23H59M"));
+    $new_date_str = $dateTimePlus->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT);
+
+    // Replacing the value.
+    $to_date_field = preg_replace("/$date_str/", $new_date_str, $to_date_field);
+    $query->where[1]['conditions'][3]['field'] = $to_date_field;
+  }
+}
+
+/**
+ * Implements hook_form_views_exposed_form_alter().
+ *
+ * Sets from day as today and to day as today +14.
+ */
+function os2web_meetings_form_views_exposed_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  if ($form['#id'] == 'views-exposed-form-os2web-meetings-search-os2web-meetings-embed-search-from-to-dates') {
+    $request = \Drupal::request();
+    if (is_null($request->get('from_date')) && is_null($request->get('to_date'))) {
+      // Getting user input.
+      $input = $form_state->getUserInput();
+
+      $input['from_date'] = date('Y-m-d');
+      $end_date = new DateTime('+14 days');
+      $input['to_date'] = date_format($end_date, 'Y-m-d');
+
+      // Setting modified user input.
+      $form_state->setUserInput($input);
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_node().
+ */
+function os2web_meetings_preprocess_node(&$variables) {
+  if ($variables['node']->getType() == 'os2web_meetings_meeting') {
+    /** @var \Drupal\Core\Datetime\DrupalDateTime $start_date */
+    $settingFormConfig = \Drupal::config(SettingsForm::$configName);
+    $showClosedAgendasSeparately = $settingFormConfig->get('show_closed_agendas_separately');
+
+    if ($start_date = $variables['node']->field_os2web_m_start_date->date) {
+      $month_value = $start_date->format('m');
+      $variables['attributes']['class'][] = "month--$month_value";
+    }
+
+    if ($variables['view_mode'] == 'full' && $showClosedAgendasSeparately) {
+      $count = 0;
+      if (isset($variables['content']['field_os2web_m_bps']['#items'])) {
+        $items = $variables['content']['field_os2web_m_bps']['#items'];
+        $count = isset($items) ? $items->count() : 0;
+      }
+      $openBp = [];
+      $closedBp = [];
+      for ($i = 0; $i < $count; $i++) {
+        // Saving BPA render and removing it from a list.
+        $bp_render = $variables['content']['field_os2web_m_bps'][$i];
+        unset($variables['content']['field_os2web_m_bps'][$i]);
+        /** @var \Drupal\node\NodeInterface $bp */
+        $bp = $bp_render['#node'];
+        if ($isClosed = $bp->get("field_os2web_m_bp_closed")->getValue())
+          $isClosed = array_pop($isClosed);
+
+        // If that a special BPA (Resume or Desicison) add it to special meta
+        // field, otherwise save it as normal BPA.
+        if (isset($isClosed) && is_array($isClosed) && $isClosed['value'] == '1') {
+          $closedBp[] = $bp_render;
+        }
+        else {
+          $openBp[] = $bp_render;
+        }
+      }
+
+      // Add normal BPA back to the render array.
+      if (isset($variables['content']['field_os2web_m_bps'])) {
+        $variables['content']['field_os2web_m_bps']['open'] = array_merge($variables['content']['field_os2web_m_bps'], $openBp);
+        $variables['content']['field_os2web_m_bps']['closed'] = array_merge($variables['content']['field_os2web_m_bps'], $closedBp);
+      }
+      else {
+        $variables['content']['field_os2web_m_bps']['open'] = $openBp;
+        $variables['content']['field_os2web_m_bps']['closed'] = $closedBp;
+      }
+    }
+  }
+  elseif ($variables['node']->getType() == 'os2web_meetings_bp' && $variables['view_mode'] == 'teaser') {
+    $settingFormConfig = \Drupal::config(SettingsForm::$configName);
+    $resumeTitle = $settingFormConfig->get('resume_bpa_title');
+    $decisionTitle = $settingFormConfig->get('decision_bpa_title');
+
+    /** @var Drupal\Core\Field\EntityReferenceFieldItemList $items */
+    $count = 0;
+    if (isset($variables['content']['field_os2web_m_bp_bpas']['#items'])) {
+      $items = $variables['content']['field_os2web_m_bp_bpas']['#items'];
+      $count = isset($items) ? $items->count() : 0;
+    }
+
+    $normalBpa = [];
+    for ($i = 0; $i < $count; $i++) {
+      // Saving BPA render and removing it from a list.
+      $bpa_render = $variables['content']['field_os2web_m_bp_bpas'][$i];
+      unset($variables['content']['field_os2web_m_bp_bpas'][$i]);
+
+      /** @var \Drupal\node\NodeInterface $bpa */
+      $bpa = $bpa_render['#node'];
+
+      // If that a special BPA (Resume or Desicison) add it to special meta
+      // field, otherwise save it as normal BPA.
+      if (!empty($resumeTitle) && strcasecmp($bpa->getTitle(), $resumeTitle) === 0) {
+        $variables['content']['#resume'] = $bpa_render;
+      }
+      elseif (!empty($decisionTitle) && strcasecmp($bpa->getTitle(), $decisionTitle) === 0) {
+        $variables['content']['#decision'] = $bpa_render;
+      }
+      else {
+        $normalBpa[] = $bpa_render;
+      }
+    }
+
+    // Add normal BPA back to the render array.
+    $variables['content']['field_os2web_m_bp_bpas'] = array_merge($variables['content']['field_os2web_m_bp_bpas'], $normalBpa);
+  }
+  elseif ($variables['node']->getType() == 'os2web_meetings_bpa' && $variables['view_mode'] == 'teaser') {
+    $settingFormConfig = \Drupal::config(SettingsForm::$configName);
+    $resumeTitle = $settingFormConfig->get('resume_bpa_title');
+    $decisionTitle = $settingFormConfig->get('decision_bpa_title');
+
+    $bpa = $variables['node'];
+    // Adding class based on the BPA title.
+    if (!empty($resumeTitle) && strcasecmp($bpa->getTitle(), $resumeTitle) === 0) {
+      $variables['attributes']['class'][] = 'os2wm-bpa-resume';
+    }
+    elseif (!empty($decisionTitle) && strcasecmp($bpa->getTitle(), $decisionTitle) === 0) {
+      $variables['attributes']['class'][] = 'os2wm-bpa-decision';
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_field().
+ */
+function os2web_meetings_preprocess_field__node__field_os2web_m_bp_enclosures(&$variables) {
+  $settingFormConfig = \Drupal::config(SettingsForm::$configName);
+  $limit = $settingFormConfig->get('enclosures_max_title_length');
+
+  foreach ($variables['items'] as $key => $item) {
+    if (isset($variables['items'][$key]['content']['#description'])) {
+      $description = $variables['items'][$key]['content']['#description'];
+
+      if (mb_strlen($description) > $limit) {
+        $description = mb_substr($description, 0, $limit) . '...';
+      }
+
+      $variables['items'][$key]['content']['#description'] = $description;
+    }
+  }
+}
+
+/**
+ * Update entity from yml.
+ *
+ * Some config like form display needs to be updated via config manager.
+ *
+ * @param string $ymlFileName
+ *   Yml file name.
+ * @param string $entityType
+ *   The entity type for this storage.
+ * @param mixed $id
+ *   The ID of the entity to load.
+ * @param array $setComponents
+ *   Array of components you want to add.
+ *   - The key will be what we are setting.
+ *   - The value is the key that will be used from the new config file
+ *     (Can have in string for array).
+ */
+function os2web_meetings_update_entity_from_yml($module_name, $ymlFileName, $entityType, $id, array $setComponents) {
+  $yml = Yaml::parse(file_get_contents(drupal_get_path('module', $module_name) . '/config/install/' . $ymlFileName . '.yml'));
+
+  $entity = \Drupal::entityTypeManager()
+    ->getStorage($entityType)
+    ->load($id);
+  foreach ($setComponents as $key => $value) {
+    $parts = explode('.', $value);
+    if (count($parts) == 1) {
+      $entity->setComponent($key, $yml[$value]);
+    }
+    else {
+      $value = NestedArray::getValue($yml, $parts);
+      if (empty($value)) {
+        \Drupal::service('messenger')->addWarning('Component ' . $key . ' has empty configuration');
+        continue;
+      }
+      $entity->setComponent($key, $value);
+    }
+  }
+
+  $entity->save();
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Sets default filter year to a current one, if user input is missing.
+ */
+function os2web_meetings_form_alter(&$form, \Drupal\Core\Form\FormStateInterface &$form_state, $form_id) {
+  // Set default year.
+  if ($form_id == 'views_exposed_form' && $form['#id'] == 'views-exposed-form-os2web-meetings-search-os2web-meetings-embed-search-simple') {
+    $yearNow = date("Y");
+    $userInput = $form_state->getUserInput();
+
+    if (!isset($userInput['ar'])) {
+      $userInput['ar'] = $yearNow;
+      $form_state->setUserInput($userInput);
+    }
   }
 }

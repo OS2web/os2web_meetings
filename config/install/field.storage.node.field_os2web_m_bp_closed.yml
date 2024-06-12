@@ -1,11 +1,11 @@
-langcode: en
+langcode: da
 status: true
 dependencies:
-  module:
-    - node
   enforced:
     module:
       - os2web_meetings
+  module:
+    - node
 id: node.field_os2web_m_bp_closed
 field_name: field_os2web_m_bp_closed
 entity_type: node

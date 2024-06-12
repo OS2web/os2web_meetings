@@ -1,4 +1,4 @@
-langcode: en
+langcode: da
 status: true
 dependencies:
   config:
@@ -12,7 +12,7 @@ entity_type: node
 bundle: os2web_meetings_meeting
 label: 'End date'
 description: ''
-required: true
+required: false
 translatable: false
 default_value: {  }
 default_value_callback: ''

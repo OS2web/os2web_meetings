@@ -1,0 +1,17 @@
+langcode: da
+status: true
+dependencies: {  }
+id: os2web_meetings_search
+label: 'OS2Web Meetings Search'
+description: ''
+folder: modules/contrib/os2web_meetings/modules/os2web_meetings_search/config/optional
+module: {  }
+theme: {  }
+blacklist:
+  - 'os2web_meetings_search*'
+  - '*os2web_meetings_search'
+  - '*os2web_meetings_search*'
+graylist: {  }
+graylist_dependents: false
+graylist_skip_equal: false
+weight: 0

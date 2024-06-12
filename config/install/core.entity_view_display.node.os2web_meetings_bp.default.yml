@@ -1,13 +1,15 @@
-langcode: en
+langcode: da
 status: true
 dependencies:
   config:
     - field.field.node.os2web_meetings_bp.body
     - field.field.node.os2web_meetings_bp.field_os2web_m_bp_bpas
     - field.field.node.os2web_meetings_bp.field_os2web_m_bp_closed
+    - field.field.node.os2web_meetings_bp.field_os2web_m_bp_enclosures
     - field.field.node.os2web_meetings_bp.field_os2web_m_esdh_id
     - node.type.os2web_meetings_bp
   module:
+    - file
     - text
     - user
 id: node.os2web_meetings_bp.default
@@ -40,6 +42,14 @@ content:
     third_party_settings: {  }
     type: boolean
     region: content
+  field_os2web_m_bp_enclosures:
+    weight: 106
+    label: above
+    settings:
+      use_description_as_link_text: true
+    third_party_settings: {  }
+    type: file_default
+    region: content
   field_os2web_m_esdh_id:
     weight: 104
     label: above
@@ -53,4 +63,5 @@ content:
     settings: {  }
     third_party_settings: {  }
     region: content
-hidden: {  }
+hidden:
+  langcode: true

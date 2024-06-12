@@ -1,0 +1,208 @@
+<?php
+
+/**
+ * @file
+ * Install, uninstall and update hooks for page builder module.
+ */
+
+use Drupal\Core\Config\FileStorage;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\os2web_meetings\Form\SettingsForm;
+use Symfony\Component\Yaml\Yaml;
+use Drupal\field\Entity\FieldConfig;
+
+
+function os2web_meetings_read_in_new_config($config_name) {
+  $path = drupal_get_path('module', 'os2web_meetings');
+  /** @var \Drupal\Core\Config\StorageInterface $active_storage */
+  $active_storage = \Drupal::service('config.storage');
+  $active_storage->write($config_name, Yaml::parse(file_get_contents($path . '/config/install/' . $config_name . '.yml')));
+}
+
+/**
+ * Make Start date field required.
+ */
+function os2web_meetings_update_8001() {
+  os2web_meetings_read_in_new_config('field.field.node.os2web_meetings_meeting.field_os2web_m_start_date');
+}
+
+/**
+ * Updates Meeting node. Added Participants fields.
+ */
+function os2web_meetings_update_8002() {
+  $path = drupal_get_path('module', 'os2web_meetings');
+  // Create field storage.
+  $field_media_image_storage_yml = Yaml::parse(file_get_contents($path . '/config/optional/field.storage.node.field_os2web_m_partic.yml'));
+  if (!FieldStorageConfig::loadByName($field_media_image_storage_yml['entity_type'], $field_media_image_storage_yml['field_name'])) {
+    FieldStorageConfig::create($field_media_image_storage_yml)->save();
+  }
+  // Create field instance.
+  $field_media_image_yml = Yaml::parse(file_get_contents($path . '/config/optional/field.field.node.os2web_meetings_meeting.field_os2web_m_partic.yml'));
+  if (!FieldConfig::loadByName($field_media_image_yml['entity_type'], $field_media_image_yml['bundle'], $field_media_image_yml['field_name'])) {
+    FieldConfig::create($field_media_image_yml)->save();
+  }
+   // Create field storage.
+  $field_media_image_storage_yml = Yaml::parse(file_get_contents($path . '/config/optional/field.storage.node.field_os2web_m_partic_cancel.yml'));
+  if (!FieldStorageConfig::loadByName($field_media_image_storage_yml['entity_type'], $field_media_image_storage_yml['field_name'])) {
+    FieldStorageConfig::create($field_media_image_storage_yml)->save();
+  }
+  // Create field instance.
+  $field_media_image_yml = Yaml::parse(file_get_contents($path . '/config/optional/field.field.node.os2web_meetings_meeting.field_os2web_m_partic_cancel.yml'));
+  if (!FieldConfig::loadByName($field_media_image_yml['entity_type'], $field_media_image_yml['bundle'], $field_media_image_yml['field_name'])) {
+    FieldConfig::create($field_media_image_yml)->save();
+  }
+
+}
+
+/**
+ * Add meeting document view.
+ */
+function os2web_meetings_update_8003() {
+  $path = drupal_get_path('module', 'os2web_meetings');
+  /** @var \Drupal\Core\Config\StorageInterface $active_storage */
+  $active_storage = \Drupal::service('config.storage');
+  $active_storage->write('views.view.os2web_meetings_meeting_document', Yaml::parse(file_get_contents($path . '/config/optional/views.view.os2web_meetings_meeting_document.yml')));
+}
+
+/**
+ * Updating paragraph os2web_meetings_search.
+ */
+function os2web_meetings_update_8004() {
+  $path = drupal_get_path('module', 'os2web_meetings');
+  /** @var \Drupal\Core\Config\StorageInterface $active_storage */
+  $active_storage = \Drupal::service('config.storage');
+
+  // Updating view.
+  $active_storage->write('views.view.os2web_meetings_search', Yaml::parse(file_get_contents($path . '/config/optional/views.view.os2web_meetings_search.yml')));
+
+  $module_handler = \Drupal::moduleHandler();
+  $config_storage = new FileStorage($module_handler->getModule('os2web_meetings')->getPath() . '/config/optional');
+
+  // Create field storage and field storage.
+  foreach (['field.storage.paragraph.field_os2web_meetings_sp_view', 'field.field.paragraph.os2web_meetings_search.field_os2web_meetings_sp_view'] as $config_name) {
+    $config_record = $config_storage->read($config_name);
+
+    $entity_type = \Drupal::service('config.manager')->getEntityTypeIdByName($config_name);
+    /** @var \Drupal\Core\Config\Entity\ConfigEntityStorageInterface $storage */
+    $storage = \Drupal::entityTypeManager()->getStorage($entity_type);
+    $entity = $storage->createFromStorageRecord($config_record);
+    $entity->save();
+  }
+
+  // Updating view and form displays.
+  $active_storage->write('core.entity_view_display.paragraph.os2web_meetings_search.default', Yaml::parse(file_get_contents($path . '/config/optional/core.entity_view_display.paragraph.os2web_meetings_search.default.yml')));
+  $active_storage->write('core.entity_form_display.paragraph.os2web_meetings_search.default', Yaml::parse(file_get_contents($path . '/config/optional/core.entity_form_display.paragraph.os2web_meetings_search.default.yml')));
+}
+
+/**
+ * Creating paragraph os2web_meetings.
+ */
+function os2web_meetings_update_8005() {
+  $path = drupal_get_path('module', 'os2web_meetings');
+  /** @var \Drupal\Core\Config\StorageInterface $active_storage */
+  $active_storage = \Drupal::service('config.storage');
+
+  //Creating paragraph.
+  $active_storage->write('paragraphs.paragraphs_type.os2web_meetings', Yaml::parse(file_get_contents($path . '/config/optional/paragraphs.paragraphs_type.os2web_meetings.yml')));
+
+  // Updating view.
+  $active_storage->write('views.view.os2web_meetings', Yaml::parse(file_get_contents($path . '/config/optional/views.view.os2web_meetings.yml')));
+
+  $module_handler = \Drupal::moduleHandler();
+  $config_storage = new FileStorage($module_handler->getModule('os2web_meetings')->getPath() . '/config/optional');
+
+  // Create field storage and field storage.
+  foreach (['field.storage.paragraph.field_os2web_meetings_par_view', 'field.field.paragraph.os2web_meetings.field_os2web_meetings_par_view'] as $config_name) {
+    $config_record = $config_storage->read($config_name);
+
+    $entity_type = \Drupal::service('config.manager')->getEntityTypeIdByName($config_name);
+    /** @var \Drupal\Core\Config\Entity\ConfigEntityStorageInterface $storage */
+    $storage = \Drupal::entityTypeManager()->getStorage($entity_type);
+    $entity = $storage->createFromStorageRecord($config_record);
+    $entity->save();
+  }
+
+  // Updating view and form displays.
+  $active_storage->write('core.entity_view_display.paragraph.os2web_meetings.default', Yaml::parse(file_get_contents($path . '/config/optional/core.entity_view_display.paragraph.os2web_meetings.default.yml')));
+  $active_storage->write('core.entity_form_display.paragraph.os2web_meetings.default', Yaml::parse(file_get_contents($path . '/config/optional/core.entity_form_display.paragraph.os2web_meetings.default.yml')));
+}
+
+/**
+ * Add new date format.
+ */
+function os2web_meetings_update_8006() {
+  $path = drupal_get_path('module', 'os2web_meetings');
+  /** @var \Drupal\Core\Config\StorageInterface $active_storage */
+  $active_storage = \Drupal::service('config.storage');
+  $active_storage->write('core.date_format.os2_month', Yaml::parse(file_get_contents($path . '/config/optional/core.date_format.os2_month.yml')));
+}
+
+/**
+ * Setting dot after BP number by default.
+ *
+ * Renaming config value.
+ */
+function os2web_meetings_update_8007() {
+  $config = \Drupal::service('config.factory')->getEditable(SettingsForm::$configName);
+
+  // Renaming config value.
+  $config->set('text_before_bp_number', $config->get('text_before_bpa_number'));
+
+  // Setting default to true.
+  $config->set('dot_after_bp_number', TRUE);
+
+  $config->save();
+}
+
+/**
+ * Updating views os2web_meetings_search.
+ */
+function os2web_meetings_update_8008() {
+  $path = drupal_get_path('module', 'os2web_meetings');
+  /** @var \Drupal\Core\Config\StorageInterface $active_storage */
+  $active_storage = \Drupal::service('config.storage');
+
+  // Updating view.
+  $active_storage->write('views.view.os2web_meetings_search', Yaml::parse(file_get_contents($path . '/config/optional/views.view.os2web_meetings_search.yml')));
+}
+
+/**
+ * Adding fields for Case number and BP committee name.
+ */
+function os2web_meetings_update_8009() {
+  $path = drupal_get_path('module', 'os2web_meetings');
+
+  // Create field storage.
+  $storageConfug = Yaml::parse(file_get_contents($path . '/config/install/field.storage.node.field_os2web_m_bp_case.yml'));
+  if (!FieldStorageConfig::loadByName($storageConfug['entity_type'], $storageConfug['field_name'])) {
+    FieldStorageConfig::create($storageConfug)->save();
+  }
+
+  // Create field instance.
+  $fieldConfig = Yaml::parse(file_get_contents($path . '/config/install/field.field.node.os2web_meetings_bp.field_os2web_m_bp_case.yml'));
+  if (!FieldConfig::loadByName($fieldConfig['entity_type'], $fieldConfig['bundle'], $fieldConfig['field_name'])) {
+    FieldConfig::create($fieldConfig)->save();
+  }
+
+  // Create field storage.
+  $storageConfug = Yaml::parse(file_get_contents($path . '/config/install/field.storage.node.field_os2web_m_bp_com_name.yml'));
+  if (!FieldStorageConfig::loadByName($storageConfug['entity_type'], $storageConfug['field_name'])) {
+    FieldStorageConfig::create($storageConfug)->save();
+  }
+
+  // Create field instance.
+  $fieldConfig = Yaml::parse(file_get_contents($path . '/config/install/field.field.node.os2web_meetings_bp.field_os2web_m_bp_com_name.yml'));
+  if (!FieldConfig::loadByName($fieldConfig['entity_type'], $fieldConfig['bundle'], $fieldConfig['field_name'])) {
+    FieldConfig::create($fieldConfig)->save();
+  }
+}
+
+/**
+ * Making field for ESDH ID  multivalue.
+ */
+function os2web_meetings_update_8010() {
+  // Updating field storage.
+  $storegeConfig = FieldStorageConfig::loadByName('taxonomy_term', 'field_os2web_m_esdh_id');
+  $storegeConfig->setCardinality(-1);
+  $storegeConfig->save();
+}

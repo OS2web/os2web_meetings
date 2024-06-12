@@ -1,0 +1,20 @@
+langcode: da
+status: true
+dependencies: {  }
+id: os2web_meetings
+label: 'OS2Web Meetings'
+description: ''
+folder: modules/contrib/os2web_meetings/config/install
+module: {  }
+theme: {  }
+blacklist:
+  - 'os2web_meetings*'
+  - '*os2web_meetings'
+  - '*os2web_meetings*'
+  - 'os2web_m_*'
+  - '*os2web_m_*'
+  - 'os2web_m_*'
+graylist: {  }
+graylist_dependents: false
+graylist_skip_equal: false
+weight: 0

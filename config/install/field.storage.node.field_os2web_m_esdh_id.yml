@@ -1,11 +1,11 @@
-langcode: en
+langcode: da
 status: true
 dependencies:
-  module:
-    - node
   enforced:
     module:
       - os2web_meetings
+  module:
+    - node
 id: node.field_os2web_m_esdh_id
 field_name: field_os2web_m_esdh_id
 entity_type: node

@@ -1,4 +1,4 @@
-langcode: en
+langcode: da
 status: true
 dependencies:
   config:
@@ -6,9 +6,11 @@ dependencies:
     - field.field.node.os2web_meetings_bp.body
     - field.field.node.os2web_meetings_bp.field_os2web_m_bp_bpas
     - field.field.node.os2web_meetings_bp.field_os2web_m_bp_closed
+    - field.field.node.os2web_meetings_bp.field_os2web_m_bp_enclosures
     - field.field.node.os2web_meetings_bp.field_os2web_m_esdh_id
     - node.type.os2web_meetings_bp
   module:
+    - file
     - text
     - user
 id: node.os2web_meetings_bp.teaser
@@ -19,17 +21,30 @@ content:
   body:
     label: hidden
     type: text_summary_or_trimmed
-    weight: 101
+    weight: 0
     settings:
       trim_length: 600
     third_party_settings: {  }
     region: content
-  links:
-    weight: 100
-    settings: {  }
-    third_party_settings: {  }
+  field_os2web_m_bp_bpas:
+    type: entity_reference_entity_view
+    weight: 2
     region: content
+    label: hidden
+    settings:
+      view_mode: teaser
+      link: false
+    third_party_settings: {  }
+  field_os2web_m_bp_enclosures:
+    type: file_default
+    weight: 1
+    region: content
+    label: hidden
+    settings:
+      use_description_as_link_text: true
+    third_party_settings: {  }
 hidden:
-  field_os2web_m_bp_bpas: true
   field_os2web_m_bp_closed: true
   field_os2web_m_esdh_id: true
+  langcode: true
+  links: true

@@ -2,8 +2,8 @@
 
 namespace Drupal\os2web_meetings\Plugin\migrate_plus\data_parser;
 
-use Drupal\migrate\MigrateException;
 use Drupal\migrate_plus\Plugin\migrate_plus\data_parser\SimpleXml;
+use Drupal\os2web_meetings\Form\SettingsForm;
 
 /**
  * Extension of contrib SimpleXml.
@@ -24,6 +24,13 @@ class SimpleXmlArray extends SimpleXml {
    * @var string
    */
   public $directoryPath;
+
+  /**
+   * XML manifest path.
+   *
+   * @var string
+   */
+  public $manifestPath;
 
   /**
    * Overrides inherited openSourceUrl function.
@@ -48,19 +55,42 @@ class SimpleXmlArray extends SimpleXml {
     // positives in our error check below. We are only concerned with errors
     // that occur from attempting to load the XML string into an object here.
     libxml_clear_errors();
+    $settingFormConfig = \Drupal::config(SettingsForm::$configName);
+    $bannedSpecialChar = $settingFormConfig->get('banned_special_char');
 
     $xml_data = $this->getDataFetcherPlugin()->getResponseContent($url);
-    $xml = simplexml_load_string(trim($xml_data), 'SimpleXMLElement', LIBXML_NOCDATA);
+    if (!empty($bannedSpecialChar)) {
+      $xml_data = str_replace(explode(',', $bannedSpecialChar), '', $xml_data);
+    }
+
+    // Replacing the unformatted chars.
+    $xml_data = preg_replace("/&#x\d+;|&#x\w;/U", '', $xml_data);
+
+    // Loading namespace info from configuration, is empty using default values.
+    $ns = '';
+    $isPrefix = FALSE;
+    if (isset($this->configuration['data_parser_xml_namespace'])) {
+      $ns = $this->configuration['data_parser_xml_namespace'];
+      $isPrefix = TRUE;
+    }
+
+    $xml = simplexml_load_string(trim($xml_data), 'SimpleXMLElement', LIBXML_NOCDATA, $ns, $isPrefix);
+
     foreach (libxml_get_errors() as $error) {
       $error_string = self::parseLibXmlError($error);
-      throw new MigrateException($error_string);
+      \Drupal::logger('os2web_meetings')->error('URL skipped. XML invalid syntax: ' . $error_string);
+      return FALSE;
     }
     $this->registerNamespaces($xml);
+
     $xpath = $this->configuration['item_selector'];
     $this->matches = $xml->xpath($xpath);
 
     // Saving directory path.
     $this->directoryPath = dirname($url);
+
+    // Saving XML path.
+    $this->manifestPath = $url;
 
     return TRUE;
   }
@@ -80,14 +110,23 @@ class SimpleXmlArray extends SimpleXml {
     $target_element = array_shift($this->matches);
     $arrayFields = [];
 
+    // Loading namespace info from configuration, is empty using default values.
+    $ns = '';
+    $isPrefix = FALSE;
+    if (isset($this->configuration['data_parser_xml_namespace'])) {
+      $ns = $this->configuration['data_parser_xml_namespace'];
+      $isPrefix = TRUE;
+    }
+
     // If we've found the desired element, populate the currentItem and
     // currentId with its data.
     if ($target_element !== FALSE && !is_null($target_element)) {
       foreach ($this->fieldSelectors() as $field_name => $xpath) {
+        /** @var \SimpleXMLElement $value */
         foreach ($target_element->xpath($xpath) as $value) {
-          if ($value->children() && !trim((string) $value)) {
+          if ($value->children($ns, $isPrefix) && !trim((string) $value)) {
             // Converting simpleXML structures to array.
-            $json = json_encode($value);
+            $json = json_encode($value->children($ns, $isPrefix));
             $value_array = json_decode($json, TRUE);
 
             $this->currentItem[$field_name][] = $value_array;
@@ -107,8 +146,8 @@ class SimpleXmlArray extends SimpleXml {
       }
 
       $this->currentItem['directory_path'] = $this->directoryPath;
+      $this->currentItem['manifest_path'] = $this->manifestPath;
     }
-
   }
 
 }

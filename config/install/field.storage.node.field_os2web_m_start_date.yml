@@ -1,12 +1,12 @@
-langcode: en
+langcode: da
 status: true
 dependencies:
-  module:
-    - datetime
-    - node
   enforced:
     module:
       - os2web_meetings
+  module:
+    - datetime
+    - node
 id: node.field_os2web_m_start_date
 field_name: field_os2web_m_start_date
 entity_type: node

@@ -1,0 +1,20 @@
+langcode: da
+status: true
+dependencies: {  }
+id: os2web_meetings_print
+label: 'OS2Web Meetings Print'
+description: ''
+folder: modules/contrib/os2web_meetings/modules/os2web_meetings_print/config/optional
+module: {  }
+theme: {  }
+blacklist:
+  - core.entity_view_display.node.os2web_meetings_bp.printable
+  - core.entity_view_display.node.os2web_meetings_bpa.printable
+  - core.entity_view_display.node.os2web_meetings_meeting.printable
+  - 'os2web_meetings_print*'
+  - '*os2web_meetings_print'
+  - '*os2web_meetings_print*'
+graylist: {  }
+graylist_dependents: false
+graylist_skip_equal: false
+weight: -1
