@@ -8,6 +8,6 @@
     "require": {
         "drupal/migrate_plus": "^6.0",
         "drupal/migrate_tools": "^6.0",
-        "drupal/printable": "^2.0"
+        "drupal/printable": "^3.1"
     }
 }
