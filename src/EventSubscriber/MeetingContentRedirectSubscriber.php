@@ -7,7 +7,7 @@ use Drupal\os2web_meetings\Entity\BulletPoint;
 use Drupal\os2web_meetings\Entity\BulletPointAttachment;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -24,7 +24,7 @@ class MeetingContentRedirectSubscriber implements EventSubscriberInterface {
    * @throws \Drupal\Core\Entity\EntityMalformedException
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
-  public function nodeRedirect(GetResponseEvent $event) {
+  public function nodeRedirect(RequestEvent $event) {
     /** @var NodeInterface $node */
     $node = NULL;
     $routeMatch = \Drupal::routeMatch();
