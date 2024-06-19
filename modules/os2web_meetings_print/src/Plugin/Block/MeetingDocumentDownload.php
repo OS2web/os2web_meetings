@@ -50,7 +50,7 @@ class MeetingDocumentDownload extends BlockBase {
    */
   private function getMarkup(NodeInterface $meeting) {
     $link_builder = \Drupal::service('printable.link_builder');
-    $links = $link_builder->buildLinks($meeting);
+    $links = $link_builder->buildLinks($meeting, 'printable');
     $output = '';
 
     /** @var \Drupal\Core\Url $pdfUrl */
