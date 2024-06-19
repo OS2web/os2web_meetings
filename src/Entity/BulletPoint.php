@@ -48,6 +48,7 @@ class BulletPoint extends Os2webNodeBase {
    */
   public function getMeeting($load = TRUE) {
     $query = \Drupal::entityQuery('node')
+      ->accessCheck(false)
       ->condition('type', 'os2web_meetings_meeting')
       ->condition('field_os2web_m_bps', $this->getEntity()->id());
 
@@ -154,6 +155,7 @@ class BulletPoint extends Os2webNodeBase {
 
     if (!empty($bpaIds)) {
       $query = \Drupal::entityQuery('node')
+        ->accessCheck(false)
         ->condition('nid', $bpaIds, 'IN')
         ->condition('type', 'os2web_meetings_bpa')
         ->condition('field_os2web_m_esdh_id', $esdhId);
