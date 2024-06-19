@@ -51,22 +51,15 @@ class MeetingDocumentDownload extends BlockBase {
   private function getMarkup(NodeInterface $meeting) {
     $link_builder = \Drupal::service('printable.link_builder');
     $links = $link_builder->buildLinks($meeting);
+    $output = '';
 
     /** @var \Drupal\Core\Url $pdfUrl */
     $pdfUrl = $links['pdf']['url'];
-    $pdfLink = Link::fromTextAndUrl(t('Download samlet dokument'), $pdfUrl)->toString();
-
-    $output = '<span class="file file--mime-application-pdf file--application-pdf">' . $pdfLink . '</span>';
-
-//    $output = '<ul class="related-links">';
-//
-//    /** @var \Drupal\node\NodeInterface $node */
-//    foreach ($related_nodes as $node) {
-//      $output .= '<li>';
-//      $output .= $node->toLink()->toString();
-//      $output .= '</li>';
-//    }
-//    $output .= '</ul>';
+    if (!empty($pdfUrl)) {
+      $pdfLink = Link::fromTextAndUrl(t('Download samlet dokument'), $pdfUrl)
+        ->toString();
+      $output = '<span class="file file--mime-application-pdf file--application-pdf">' . $pdfLink . '</span>';
+    }
 
     return $output;
   }
