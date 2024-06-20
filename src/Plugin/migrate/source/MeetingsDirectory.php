@@ -290,7 +290,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       // unpublishing.
       // The meetings will be removed from that list if they are present in
       // prepareRow.
-      $query = \Drupal::entityQuery('node');
+      $query = \Drupal::entityQuery('node')->accessCheck(false);
       $query->condition('type', 'os2web_meetings_meeting');
       $query->condition('status', 1);
       $query->condition('field_os2web_m_source', $this->getPluginId());

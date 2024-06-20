@@ -72,6 +72,7 @@ class BulletPointAttachment extends Os2webNodeBase {
    */
   public function getBulletPoint($load = TRUE) {
     $query = \Drupal::entityQuery('node')
+      ->accessCheck(false)
       ->condition('type', 'os2web_meetings_bp')
       ->condition('field_os2web_m_bp_bpas', $this->getEntity()->id());
 

@@ -112,6 +112,7 @@ class Meeting extends Os2webNodeBase {
 
     if (!empty($bpIds)) {
       $query = \Drupal::entityQuery('node')
+        ->accessCheck(false)
         ->condition('nid', $bpIds, 'IN')
         ->condition('type', 'os2web_meetings_bp')
         ->condition('field_os2web_m_esdh_id', $esdhId);

@@ -37,6 +37,7 @@ class RelatedMeetingLink extends BlockBase implements BlockPluginInterface {
 
     // Get previous/next meeting.
     $query = \Drupal::entityQuery('node')
+      ->accessCheck(false)
       ->condition('status', 1)
       ->condition('type', 'os2web_meetings_meeting')
       ->condition('field_os2web_m_committee', $meetingCommittee)
