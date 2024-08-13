@@ -49,7 +49,7 @@ class SimpleXmlArray extends SimpleXml {
    *
    * @throws \Drupal\migrate\MigrateException
    */
-  protected function openSourceUrl($url) {
+  protected function openSourceUrl($url): bool {
     // Clear XML error buffer. Other Drupal code that executed during the
     // migration may have polluted the error buffer and could create false
     // positives in our error check below. We are only concerned with errors
