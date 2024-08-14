@@ -106,7 +106,7 @@ class SimpleXmlArray extends SimpleXml {
    *
    * @see \Drupal\migrate_plus\Plugin\migrate_plus\data_parser\SimpleXml::fetchNextRow()
    */
-  protected function fetchNextRow() {
+  protected function fetchNextRow(): void {
     $target_element = array_shift($this->matches);
     $arrayFields = [];
 
