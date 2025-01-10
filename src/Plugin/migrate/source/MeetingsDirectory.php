@@ -788,7 +788,8 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       $unmanagedFilePath = $file_system->copy($uri, $copyUri, FileSystemInterface::EXISTS_REPLACE);
 
       $data = file_get_contents($unmanagedFilePath);
-      $managedFile = file_save_data($data, $unmanagedFilePath, FileSystemInterface::EXISTS_REPLACE);
+
+      $managedFile = \Drupal::service('file.repository')->writeData($data, $unmanagedFilePath, FileSystemInterface::EXISTS_REPLACE);
       }
       else {
         $current_user = \Drupal::currentUser();
