@@ -58,7 +58,14 @@ class SimpleXmlArray extends SimpleXml {
     $settingFormConfig = \Drupal::config(SettingsForm::$configName);
     $bannedSpecialChar = $settingFormConfig->get('banned_special_char');
 
-    $xml_data = $this->getDataFetcherPlugin()->getResponseContent($url);
+    try {
+      $xml_data = $this->getDataFetcherPlugin()->getResponseContent($url);
+    }
+    catch (\Exception $ex) {
+      \Drupal::logger('os2web_meetings')->error('URL skipped. File not found or error reading: ' . $ex->getMessage());
+      return FALSE;
+    }
+
     if (!empty($bannedSpecialChar)) {
       $xml_data = str_replace(explode(',', $bannedSpecialChar), '', $xml_data);
     }
