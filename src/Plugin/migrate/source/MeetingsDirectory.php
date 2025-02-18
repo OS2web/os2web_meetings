@@ -906,7 +906,7 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
         $html = str_replace($path, "", $html);
       }
       else {
-        $imageRealUrl = file_create_url($relativeUri);
+        $imageRealUrl = \Drupal::service('file_url_generator')->generateAbsoluteString($relativeUri);
         $html = str_replace($path, $imageRealUrl, $html);
       }
     }
