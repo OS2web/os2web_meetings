@@ -273,10 +273,10 @@ abstract class MeetingsDirectory extends Url implements MeetingsDirectoryInterfa
       // Process participants
       $participantsCanonical = $this->convertParticipantToCanonical($source);
       if (!empty($participantsCanonical['participants'])){
-        $row->setSourceProperty('participants', implode(',', $participantsCanonical['participants']));
+        $row->setSourceProperty('participants', implode(', ', $participantsCanonical['participants']));
       }
       if (!empty($participantsCanonical['participants_canceled'])){
-        $row->setSourceProperty('cancel_participants', implode(',', $participantsCanonical['participants_canceled']));
+        $row->setSourceProperty('cancel_participants', implode(', ', $participantsCanonical['participants_canceled']));
       }
     }
   }

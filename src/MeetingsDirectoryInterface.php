@@ -261,11 +261,23 @@ interface MeetingsDirectoryInterface extends ImportAwareInterface {
    * @param array $source
    *   Raw array values from ESDH provider.
    *
-   * @return string
-   *   Agenda type as string.
+   * @return array
+   *   Array of participants and cancelled participants.
+   *   [
+   *     'participants' => [
+   *       'name1',
+   *       'name2',
+   *       ...
+   *     ],
+   *     'participants_cancelled' => [
+   *       'name1',
+   *       'name2',
+   *       ...
+   *     ]
+   *   ]
    */
   public function convertParticipantToCanonical(array $source);
-  
+
   /**
    * Convert the agenda id to canonical format.
    *
