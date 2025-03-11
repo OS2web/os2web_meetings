@@ -245,7 +245,9 @@ function os2web_meetings_preprocess_node(&$variables) {
       // Add normal BPA back to the render array.
       if (isset($variables['content']['field_os2web_m_bps'])) {
         $variables['content']['field_os2web_m_bps']['open'] = array_merge($variables['content']['field_os2web_m_bps'], $openBp);
-        $variables['content']['field_os2web_m_bps']['closed'] = array_merge($variables['content']['field_os2web_m_bps'], $closedBp);
+        if ($closedBp) {
+          $variables['content']['field_os2web_m_bps']['closed'] = array_merge($variables['content']['field_os2web_m_bps'], $closedBp);
+        }
       }
       else {
         $variables['content']['field_os2web_m_bps']['open'] = $openBp;
