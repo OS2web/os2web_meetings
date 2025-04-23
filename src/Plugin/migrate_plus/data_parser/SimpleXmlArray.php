@@ -36,8 +36,9 @@ class SimpleXmlArray extends SimpleXml {
    * Overrides inherited openSourceUrl function.
    *
    * The difference with inherited function is that simplexml is loaded
-   * with LIBXML_NOCDATA flag, that allows to read CDATA properties.
-   * Another difference with inherited function is saving XML directory path.
+   * with LIBXML_NOCDATA and LIBXML_PARSEHUGE flags, that allows to read
+   * CDATA properties. Another difference with inherited function is saving
+   * XML directory path.
    *
    * @param string $url
    *   URL to open.
@@ -81,7 +82,7 @@ class SimpleXmlArray extends SimpleXml {
       $isPrefix = TRUE;
     }
 
-    $xml = simplexml_load_string(trim($xml_data), 'SimpleXMLElement', LIBXML_NOCDATA, $ns, $isPrefix);
+    $xml = simplexml_load_string(trim($xml_data), 'SimpleXMLElement', LIBXML_NOCDATA | LIBXML_PARSEHUGE, $ns, $isPrefix);
 
     foreach (libxml_get_errors() as $error) {
       $error_string = self::parseLibXmlError($error);
