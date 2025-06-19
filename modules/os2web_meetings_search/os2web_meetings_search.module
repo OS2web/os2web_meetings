@@ -174,7 +174,9 @@ function os2web_meetings_search_preprocess_node(&$variables) {
       $os2webBpa = new BulletPointAttachment($node);
       $bp = $os2webBpa->getBulletPoint();
 
-      $variables['label'] = t('Bilag til: @title', ['@title' => $bp->getTitle()]);
+      if ($bp instanceof NodeInterface) {
+        $variables['label'] = t('Bilag til: @title', ['@title' => $bp->getTitle()]);
+      }
     }
   }
 }
