@@ -3,7 +3,7 @@ type: module
 description: Meetings search page
 package: OS2Web
 core: 8.x
-core_version_requirement: ^8 || ^9 || ^10
+core_version_requirement: ^9 || ^10 || ^11
 dependencies:
   - os2web_meetings
   - os2web_search
